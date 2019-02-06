@@ -5,7 +5,7 @@ __author__ = "Kenneth Berry"
 
 import sys
 
-
+# MAL instructions
 MAL = {"LOAD": ['r', 's'],
        "LOADI": ['r', 'v'],
        "STORE": ['r', 'd'],
@@ -20,25 +20,23 @@ MAL = {"LOAD": ['r', 's'],
        "NOOP": [],
        "END": []}
 
-ERRORS = {"label": "** error: ill-formed label **",
-          "opcode": "** error: invalid opcode **"}
+# r0-r8
+REGISTERS = ['r' + str(n) for n in range(9)]
 
 
 class SyntaxChecker():
     """MAL syntax checker"""
 
-    def __init__(self):
-        pass
+    def __init__(self): # TODO: remove if not used
+        self.labels = None # stores labels in MAL program
 
     def __read_program(self, mal_file):
         """Opens and reads MAL program file."""
         mal_program_lines = {}
         with open(mal_file, 'r') as file:
-            line_number = 1
-            for line in file:
+            for index, line in enumerate(file):
                 mal_program_lines.update(
-                    {str(line_number): line.replace("\n"or"\r", "")})
-                line_number += 1
+                    {str(index + 1): line.replace("\n"or"\r", "")})
         return mal_program_lines
 
     def __strip_program(self, original):
@@ -76,31 +74,67 @@ class SyntaxChecker():
         for line in stripped:
             evaluated.update({line: stripped[line]})
             first_item = stripped[line].split()[0]
-            if ":" in first_item and len(first_item) > 6:
-                error = stripped[line] + "\n" + ERRORS["label"]
-                evaluated.update({line: error})
-            elif stripped[line].split()[0] in MAL.keys():
-                self.__evaluate_instruction(line)
-            else:
-                error = stripped[line] + "\n" + ERRORS["opcode"]
-                evaluated.update({line: error})
+            if ":" in first_item:  # first item in line is a label
+                if len(first_item) > 6:
+                    error_line = stripped[line] \
+                        + ("\n   ** error: ill-formed label {} **").format(first_item)
+                    evaluated.update({line: error_line})
+                else:
+                    pass  # TODO: add tracking of labels for warnings
+            elif stripped[line].split()[0] in MAL.keys():  # first item is valid opcode
+                evaluated_line = self.__evaluate_instruction(stripped[line])
+                evaluated.update({line: evaluated_line})
+            else:  # first item is invalid opcode
+                error_line = stripped[line] + \
+                    ("\n   ** error: invalid opcode {} **").format(first_item)
+                evaluated.update({line: error_line})
         return evaluated
 
     def __evaluate_instruction(self, instruction):
         """Evaluate if an instruction contains errors."""
-        self.__process_error()
-        self.__process_warning()
+        evaluated_line = instruction
+        opcode = instruction.split()[0]
+        operands = instruction.replace(",", "").split()[1:]
 
-    def __process_error(self):
-        """Writes appropriate error messages to report file."""
-        # print("test-error")
+        # Check for valid number of operands
+        if len(operands) < len(MAL[opcode]):
+            evaluated_line += "\n   ** error: too few operands **"
+        elif len(operands) > len(MAL[opcode]):
+            evaluated_line += "\n   ** error: too many operands **"
+        else:
+            # Check for errors in operands
+            operand_errors = self.__evaluate_operands(opcode, operands)
+            if operand_errors:
+                for operand_error in operand_errors:
+                    evaluated_line += '\n' + operand_error
+        return evaluated_line
 
-    def __process_warning(self):
-        """Writes appropriate warning messages to report file."""
-        # print("test-warning")
+    def __evaluate_operands(self, opcode, operands):
+        """Evaluate if an operand is valid"""
+        operand_errors = []
+        valid_operands = MAL[opcode]
+        for index, valid_operand in enumerate(valid_operands):
+            if 'r' in valid_operand:  # register
+                if operands[index] not in REGISTERS:
+                    operand_errors.append(
+                        ("   ** error: invalid register {} **").format(operands[index]))
+            elif 'v' in valid_operand:  # imediate value
+                if '8' in operands[index] or '9' in operands[index]:
+                    operand_errors.append(
+                        ("   ** error: ill-formed literal {} **").format(operands[index]))
+            elif 's' in valid_operand or 'd' in valid_operand:  # identifier
+                if len(operands[index]) > 5:
+                    operand_errors.append(
+                        ("   ** error: ill-formed identifier {} **").format(operands[index]))
+            elif 'lab' in valid_operand:  # label
+                if len(operands[index]) > 5:
+                    operand_errors.append(
+                        ("   ** error: ill-formed label {} **").format(operands[index]))
+        return operand_errors
 
     def check(self, mal_file):
         """Check syntax of MAL program"""
+        self.labels = [] # Create empty label list
         original = self.__read_program(mal_file)
         stripped = self.__strip_program(original)
         evaluated = self.__evaluate_program(stripped)
@@ -108,6 +142,6 @@ class SyntaxChecker():
 
 
 if __name__ == "__main__":
-    MAL_FILE = "C:\Git\cs-3210-projects\Mal-Syntax-Checking\error-test-sum.mal"
+    MAL_FILE = sys.argv[1] + ".mal"
     SYNTAX_CHECKER = SyntaxChecker()
     SYNTAX_CHECKER.check(MAL_FILE)
