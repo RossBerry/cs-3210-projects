@@ -24,7 +24,7 @@ MAL = {"LOAD": ['r', 's'],
 REGISTERS = ['r' + str(n) for n in range(9)]
 
 
-class SyntaxChecker():
+class SyntaxChecker:
     """MAL syntax checker"""
 
     def __init__(self): # TODO: remove if not used
