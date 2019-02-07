@@ -1,0 +1,7 @@
+(defun add-list (lst)
+    (cond ( (null lst) 0)
+        (t (+ (car lst) (add-list (cdr lst))))
+    )
+)
+(defvar lst '(1 2 3))
+(write (add-list lst))
