@@ -27,8 +27,8 @@ REGISTERS = ['r' + str(n) for n in range(9)]
 class SyntaxChecker:
     """MAL syntax checker"""
 
-    def __init__(self): # TODO: remove if not used
-        self.labels = None # stores labels in MAL program
+    def __init__(self):  # TODO: remove if not used
+        self.__labels = None  # stores labels in MAL program
 
     def __read_program(self, mal_file):
         """Opens and reads MAL program file."""
@@ -36,11 +36,11 @@ class SyntaxChecker:
         with open(mal_file, 'r') as file:
             for index, line in enumerate(file):
                 mal_program_lines.update(
-                    {str(index + 1): line.replace("\n"or"\r", "")})
+                    {str(index + 1): line.replace('\n'or'\r', '')})
         return mal_program_lines
 
     def __strip_program(self, original):
-        """Strips blank lines and comments from program lines"""
+        """Strips blank lines and comments from program."""
         stripped = {}
         for line in original:
             if ";" in original[line]:
@@ -48,7 +48,7 @@ class SyntaxChecker:
                 if index != 0:
                     stripped.update(
                         {line: original[line][:index - 1]})
-            elif original[line] != "":
+            elif original[line] != '':
                 stripped.update({line: original[line]})
         return stripped
 
@@ -59,14 +59,14 @@ class SyntaxChecker:
         divider = "\n-------------\n"
         print("HEADER")
         print(divider)
-        for key in original:
-            print(key, original[key])
+        for line in original:
+            print(line, original[line])
         print(divider)
-        for key in stripped:
-            print(key, stripped[key])
+        for line in stripped:
+            print(line, stripped[line])
         print(divider)
-        for key in evaluated:
-            print(key, evaluated[key])
+        for line in evaluated:
+            print(line, evaluated[line])
 
     def __evaluate_program(self, stripped):
         """Process a line read in from the MAL program."""
@@ -75,12 +75,11 @@ class SyntaxChecker:
             evaluated.update({line: stripped[line]})
             first_item = stripped[line].split()[0]
             if ":" in first_item:  # first item in line is a label
+                self.__labels.update({first_item.replace(':', ''): [line, 0]})
                 if len(first_item) > 6:
                     error_line = stripped[line] \
                         + ("\n   ** error: ill-formed label {} **").format(first_item)
                     evaluated.update({line: error_line})
-                else:
-                    pass  # TODO: add tracking of labels for warnings
             elif stripped[line].split()[0] in MAL.keys():  # first item is valid opcode
                 evaluated_line = self.__evaluate_instruction(stripped[line])
                 evaluated.update({line: evaluated_line})
@@ -88,6 +87,11 @@ class SyntaxChecker:
                 error_line = stripped[line] + \
                     ("\n   ** error: invalid opcode {} **").format(first_item)
                 evaluated.update({line: error_line})
+        for label in self.__labels:
+            if self.__labels[label][1] == 0:
+                warning = "\n   ** warning: label is never branched to **"
+                new_line = evaluated[self.__labels[label][0]] + warning
+                evaluated.update({self.__labels[label][0]: new_line})
         return evaluated
 
     def __evaluate_instruction(self, instruction):
@@ -118,7 +122,7 @@ class SyntaxChecker:
                 if operands[index] not in REGISTERS:
                     operand_errors.append(
                         ("   ** error: invalid register {} **").format(operands[index]))
-            elif 'v' in valid_operand:  # imediate value
+            elif 'v' in valid_operand:  # literal value
                 if '8' in operands[index] or '9' in operands[index]:
                     operand_errors.append(
                         ("   ** error: ill-formed literal {} **").format(operands[index]))
@@ -130,11 +134,19 @@ class SyntaxChecker:
                 if len(operands[index]) > 5:
                     operand_errors.append(
                         ("   ** error: ill-formed label {} **").format(operands[index]))
+                if operands[index] not in self.__labels.keys():
+                    operand_errors.append(
+                        ("   ** warning: branch to non-existant label {} **").format(operands[index]))
+                else:
+                    label_lst = self.__labels[operands[index]]
+                    label_lst[1] += 1
+                    self.__labels.update(
+                        {operands[index]: label_lst})
         return operand_errors
 
     def check(self, mal_file):
         """Check syntax of MAL program"""
-        self.labels = [] # Create empty label list
+        self.__labels = {}  # Create empty label dictionary
         original = self.__read_program(mal_file)
         stripped = self.__strip_program(original)
         evaluated = self.__evaluate_program(stripped)
