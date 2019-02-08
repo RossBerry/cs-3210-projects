@@ -27,7 +27,7 @@ REGISTERS = ['r' + str(n) for n in range(9)]
 class SyntaxChecker:
     """MAL syntax checker"""
 
-    def __init__(self):  # TODO: remove if not used
+    def __init__(self):
         self.__labels = None  # stores labels in MAL program
 
     def __read_program(self, mal_file):
@@ -71,11 +71,17 @@ class SyntaxChecker:
     def __evaluate_program(self, stripped):
         """Process a line read in from the MAL program."""
         evaluated = {}
+        # look for labels in program
+        for line in stripped: 
+            first_item = stripped[line].split()[0]
+            if ':' in first_item:
+                # add label to labels dictionary: {label_name: [line_num, reference_count]}
+                self.__labels.update({first_item.replace(':', ''): [line, 0]})
+        # check each line in program for valid syntax
         for line in stripped:
             evaluated.update({line: stripped[line]})
             first_item = stripped[line].split()[0]
             if ":" in first_item:  # first item in line is a label
-                self.__labels.update({first_item.replace(':', ''): [line, 0]})
                 if len(first_item) > 6:
                     error_line = stripped[line] \
                         + ("\n   ** error: ill-formed label {} **").format(first_item)
@@ -97,29 +103,29 @@ class SyntaxChecker:
     def __evaluate_instruction(self, instruction):
         """Evaluate if an instruction contains errors."""
         evaluated_line = instruction
-        opcode = instruction.split()[0]
-        operands = instruction.replace(",", "").split()[1:]
-
+        opcode = instruction.split()[0]  # first item in instruction
+        operands = instruction.replace(',', '').split()[
+            1:]  # remaining items, w/o commas
         # Check for valid number of operands
-        if len(operands) < len(MAL[opcode]):
+        if len(operands) < len(MAL[opcode]):  # too few operands
             evaluated_line += "\n   ** error: too few operands **"
-        elif len(operands) > len(MAL[opcode]):
+        elif len(operands) > len(MAL[opcode]):  # too many operands
             evaluated_line += "\n   ** error: too many operands **"
-        else:
+        else:  # valid number of operands
             # Check for errors in operands
             operand_errors = self.__evaluate_operands(opcode, operands)
-            if operand_errors:
+            if operand_errors:  # add operand errors below program line
                 for operand_error in operand_errors:
                     evaluated_line += '\n' + operand_error
         return evaluated_line
 
     def __evaluate_operands(self, opcode, operands):
         """Evaluate if an operand is valid"""
-        operand_errors = []
-        valid_operands = MAL[opcode]
+        operand_errors = []  # list to store operand errors
+        valid_operands = MAL[opcode]  # valid operands for this opcode
         for index, valid_operand in enumerate(valid_operands):
             if 'r' in valid_operand:  # register
-                if operands[index] not in REGISTERS:
+                if operands[index] not in REGISTERS:  # register not r0-r9
                     operand_errors.append(
                         ("   ** error: invalid register {} **").format(operands[index]))
             elif 'v' in valid_operand:  # literal value
@@ -127,14 +133,15 @@ class SyntaxChecker:
                     operand_errors.append(
                         ("   ** error: ill-formed literal {} **").format(operands[index]))
             elif 's' in valid_operand or 'd' in valid_operand:  # identifier
-                if len(operands[index]) > 5:
+                if len(operands[index]) > 5:  # identifier too long
                     operand_errors.append(
                         ("   ** error: ill-formed identifier {} **").format(operands[index]))
             elif 'lab' in valid_operand:  # label
-                if len(operands[index]) > 5:
+                if len(operands[index]) > 5:  # label too long
                     operand_errors.append(
                         ("   ** error: ill-formed label {} **").format(operands[index]))
-                if operands[index] not in self.__labels.keys():
+                # TODO: bug if operand points to label that is later in program
+                if operands[index] not in self.__labels:
                     operand_errors.append(
                         ("   ** warning: branch to non-existant label {} **").format(operands[index]))
                 else:
