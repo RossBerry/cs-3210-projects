@@ -4,6 +4,7 @@ mal_syntax_checker.py
 __author__ = "Kenneth Berry"
 
 import sys
+import datetime
 
 # MAL instructions
 MAL = {"LOAD": ['r', 's'],
@@ -28,7 +29,7 @@ class SyntaxChecker:
     """MAL syntax checker"""
 
     def __init__(self):
-        self.__labels = None  # stores labels in MAL program
+        self.__labels = None  # stores all labels in the MAL program
 
     def __read_program(self, mal_file):
         """Opens and reads MAL program file."""
@@ -56,20 +57,34 @@ class SyntaxChecker:
         """Generate MAL program error listing section of report, finish up
         report and close report file.
         """
-        divider = "\n-------------\n"
-        print("HEADER")
-        print(divider)
-        for line in original:
-            print(line, original[line])
-        print(divider)
-        for line in stripped:
-            print(line, stripped[line])
-        print(divider)
-        for line in evaluated:
-            print(line, evaluated[line])
+        mal_file = sys.argv[1] + ".mal"
+        report_file = sys.argv[1] + ".log"
+        now = datetime.datetime.now()
+        date = str(now.month) + '/' + str(now.day) + '/' + str(now.year)
+        header = mal_file + ' - ' + report_file + ' - ' + \
+            date + ' - ' + __author__ + ' - ' + "CS3210\n"
+        divider = "\n-------------\n\n"
+
+        with open(report_file, 'w') as file:
+            file.write(header)
+            file.write(divider)
+            file.write("original MAL program listing:\n\n")
+            for line in original:
+                file.write(line)
+                file.write(' ' + original[line] + '\n')
+            file.write(divider)
+            file.write("stripped MAL program listing:\n\n")
+            for line in stripped:
+                file.write(line)
+                file.write(' ' + stripped[line] + '\n')
+            file.write(divider)
+            file.write("error report listing:\n\n")
+            for line in evaluated:
+                file.write(line)
+                file.write(' ' + evaluated[line] + '\n')
 
     def __evaluate_program(self, stripped):
-        """Process a line read in from the MAL program."""
+        """Evaluate syntax for each line in MAL program."""
         evaluated = {}
         # look for labels in program
         for line in stripped:
@@ -108,7 +123,6 @@ class SyntaxChecker:
             1:]  # remaining items, w/o commas
         # Check for valid number of operands
         if len(operands) < len(MAL[opcode]):  # too few operands
-            print("DEBUG", len(MAL[opcode]))
             if len(MAL[opcode]) == 1:
                 evaluated_line += ("\n   ** error: too few operands - {} operand expected for {} **").format(
                     len(MAL[opcode]), opcode)
@@ -131,7 +145,7 @@ class SyntaxChecker:
         return evaluated_line
 
     def __evaluate_operands(self, opcode, operands):
-        """Evaluate if an operand is valid"""
+        """Evaluate if operands are valid"""
         operand_errors = []  # list to store operand errors
         valid_operands = MAL[opcode]  # valid operands for this opcode
         for index, valid_operand in enumerate(valid_operands):
