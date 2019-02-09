@@ -72,7 +72,7 @@ class SyntaxChecker:
         """Process a line read in from the MAL program."""
         evaluated = {}
         # look for labels in program
-        for line in stripped: 
+        for line in stripped:
             first_item = stripped[line].split()[0]
             if ':' in first_item:
                 # add label to labels dictionary: {label_name: [line_num, reference_count]}
@@ -84,7 +84,7 @@ class SyntaxChecker:
             if ":" in first_item:  # first item in line is a label
                 if len(first_item) > 6:
                     error_line = stripped[line] \
-                        + ("\n   ** error: ill-formed label {} **").format(first_item)
+                        + ("\n   ** error: ill-formed label {} - too long **").format(first_item)
                     evaluated.update({line: error_line})
             elif stripped[line].split()[0] in MAL.keys():  # first item is valid opcode
                 evaluated_line = self.__evaluate_instruction(stripped[line])
@@ -108,9 +108,20 @@ class SyntaxChecker:
             1:]  # remaining items, w/o commas
         # Check for valid number of operands
         if len(operands) < len(MAL[opcode]):  # too few operands
-            evaluated_line += "\n   ** error: too few operands **"
+            print("DEBUG", len(MAL[opcode]))
+            if len(MAL[opcode]) == 1:
+                evaluated_line += ("\n   ** error: too few operands - {} operand expected for {} **").format(
+                    len(MAL[opcode]), opcode)
+            else:
+                evaluated_line += ("\n   ** error: too few operands - {} operands expected for {} **").format(
+                    len(MAL[opcode]), opcode)
         elif len(operands) > len(MAL[opcode]):  # too many operands
-            evaluated_line += "\n   ** error: too many operands **"
+            if len(MAL[opcode]) == 1:
+                evaluated_line += ("\n   ** error: too many operands - {} operand expected for {} **").format(
+                    len(MAL[opcode]), opcode)
+            else:
+                evaluated_line += ("\n   ** error: too many operands - {} operands expected for {} **").format(
+                    len(MAL[opcode]), opcode)
         else:  # valid number of operands
             # Check for errors in operands
             operand_errors = self.__evaluate_operands(opcode, operands)
@@ -129,18 +140,17 @@ class SyntaxChecker:
                     operand_errors.append(
                         ("   ** error: invalid register {} **").format(operands[index]))
             elif 'v' in valid_operand:  # literal value
-                if '8' in operands[index] or '9' in operands[index]:
+                if not is_octal_num(operands[index]):
                     operand_errors.append(
-                        ("   ** error: ill-formed literal {} **").format(operands[index]))
+                        ("   ** error: ill-formed literal {} - not an octal number **").format(operands[index]))
             elif 's' in valid_operand or 'd' in valid_operand:  # identifier
                 if len(operands[index]) > 5:  # identifier too long
                     operand_errors.append(
-                        ("   ** error: ill-formed identifier {} **").format(operands[index]))
+                        ("   ** error: ill-formed identifier {} - too long **").format(operands[index]))
             elif 'lab' in valid_operand:  # label
                 if len(operands[index]) > 5:  # label too long
                     operand_errors.append(
-                        ("   ** error: ill-formed label {} **").format(operands[index]))
-                # TODO: bug if operand points to label that is later in program
+                        ("   ** error: ill-formed label {} - too long **").format(operands[index]))
                 if operands[index] not in self.__labels:
                     operand_errors.append(
                         ("   ** warning: branch to non-existant label {} **").format(operands[index]))
@@ -158,6 +168,16 @@ class SyntaxChecker:
         stripped = self.__strip_program(original)
         evaluated = self.__evaluate_program(stripped)
         self.__write_report(original, stripped, evaluated)
+
+
+def is_octal_num(number):
+    """Returns True if a number is octal and False if not"""
+    valid_octal = [str(n) for n in range(8)]
+    octal = True
+    for num in str(number):
+        if num not in valid_octal:
+            octal = False
+    return octal
 
 
 if __name__ == "__main__":
