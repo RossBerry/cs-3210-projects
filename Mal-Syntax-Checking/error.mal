@@ -16,6 +16,7 @@ INC r1, 1            ; too many operands
 ADD r0, r1           ; too few operands
 BLT r1, r2, MainLoop ; ill-formed label
 BR end
+BR test
 
 end:
 STORE r0, result     ; ill-formed identifier

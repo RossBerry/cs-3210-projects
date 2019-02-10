@@ -1,2 +1,5 @@
 # ignore VS Code settings
 /.vscode
+
+# ignore report logs
+*.log
