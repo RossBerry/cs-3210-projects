@@ -10,8 +10,8 @@ MAL = {"LOAD": ['r', 's'],
        "LOADI": ['r', 'v'],
        "STORE": ['r', 'd'],
        "ADD": ['r1', 'r2', 'r3'],
-       "INC": ['r'],
        "SUB": ['r1', 'r2', 'r3'],
+       "INC": ['r'],
        "DEC": ['r'],
        "BEQ": ['r1', 'r2', 'lab'],
        "BLT": ['r1', 'r2', 'lab'],
@@ -28,27 +28,33 @@ class SyntaxChecker:
     """MAL syntax checker"""
 
     def __init__(self):
-        self.__labels = None  # stores labels in MAL program
+        self.__labels = None # stores labels in MAL program
 
     def __read_program(self, mal_file):
         """Opens and reads MAL program file."""
-        mal_program_lines = {}
+        lines = {}
         with open(mal_file, 'r') as file:
+            # Add lines to dictionary: {line_num: line}
             for index, line in enumerate(file):
-                mal_program_lines.update(
+                lines.update(
                     {str(index + 1): line.replace('\n'or'\r', '')})
-        return mal_program_lines
+        stripped = self.__strip_program(lines)
+        return lines, stripped
 
     def __strip_program(self, original):
-        """Strips blank lines and comments from program."""
+        """Strip blank lines and comments from program."""
         stripped = {}
         for line in original:
             if ";" in original[line]:
+                # Line contains a comment
                 index = original[line].find(';')
                 if index != 0:
+                    # In-line comment
+                    # Remove comment from line
                     stripped.update(
                         {line: original[line][:index - 1]})
             elif original[line] != '':
+                # Line is not blank and does not contain comment
                 stripped.update({line: original[line]})
         return stripped
 
@@ -71,29 +77,34 @@ class SyntaxChecker:
     def __evaluate_program(self, stripped):
         """Process a line read in from the MAL program."""
         evaluated = {}
-        # look for labels in program
+        # Look for labels in program
         for line in stripped: 
             first_item = stripped[line].split()[0]
             if ':' in first_item:
-                # add label to labels dictionary: {label_name: [line_num, reference_count]}
+                # Add label to labels dictionary: {label_name: [line_num, reference_count]}
                 self.__labels.update({first_item.replace(':', ''): [line, 0]})
-        # check each line in program for valid syntax
+        # Check each line in program for valid syntax
         for line in stripped:
             evaluated.update({line: stripped[line]})
             first_item = stripped[line].split()[0]
-            if ":" in first_item:  # first item in line is a label
+            if ":" in first_item:
+                # First item in line is a label
                 if len(first_item) > 6:
                     error_line = stripped[line] \
                         + ("\n   ** error: ill-formed label {} **").format(first_item)
                     evaluated.update({line: error_line})
-            elif stripped[line].split()[0] in MAL.keys():  # first item is valid opcode
+            elif stripped[line].split()[0] in MAL.keys():
+                # First item is valid opcode
                 evaluated_line = self.__evaluate_instruction(stripped[line])
                 evaluated.update({line: evaluated_line})
-            else:  # first item is invalid opcode
+            else:
+                # First item is invalid opcode
                 error_line = stripped[line] + \
                     ("\n   ** error: invalid opcode {} **").format(first_item)
                 evaluated.update({line: error_line})
+        # Check if there are labels that were not branched to
         for label in self.__labels:
+            # Add warning if the label if the referenced count is zero
             if self.__labels[label][1] == 0:
                 warning = "\n   ** warning: label is never branched to **"
                 new_line = evaluated[self.__labels[label][0]] + warning
@@ -103,48 +114,57 @@ class SyntaxChecker:
     def __evaluate_instruction(self, instruction):
         """Evaluate if an instruction contains errors."""
         evaluated_line = instruction
-        opcode = instruction.split()[0]  # first item in instruction
-        operands = instruction.replace(',', '').split()[
-            1:]  # remaining items, w/o commas
+        opcode = instruction.split()[0]
+        operands = instruction.replace(',', '').split()[1:]
         # Check for valid number of operands
-        if len(operands) < len(MAL[opcode]):  # too few operands
+        if len(operands) < len(MAL[opcode]): # too few operands
             evaluated_line += "\n   ** error: too few operands **"
-        elif len(operands) > len(MAL[opcode]):  # too many operands
+        elif len(operands) > len(MAL[opcode]): # too many operands
             evaluated_line += "\n   ** error: too many operands **"
-        else:  # valid number of operands
+        else: # Valid number of operands
             # Check for errors in operands
             operand_errors = self.__evaluate_operands(opcode, operands)
-            if operand_errors:  # add operand errors below program line
+            # Add operand errors below instruction
+            if operand_errors:
                 for operand_error in operand_errors:
                     evaluated_line += '\n' + operand_error
         return evaluated_line
 
     def __evaluate_operands(self, opcode, operands):
         """Evaluate if an operand is valid"""
-        operand_errors = []  # list to store operand errors
-        valid_operands = MAL[opcode]  # valid operands for this opcode
+        operand_errors = []  # List to store operand errors
+        valid_operands = MAL[opcode]  # Valid operands for opcode
         for index, valid_operand in enumerate(valid_operands):
-            if 'r' in valid_operand:  # register
-                if operands[index] not in REGISTERS:  # register not r0-r9
+            if 'r' in valid_operand:
+                # Register
+                if operands[index] not in REGISTERS:
+                    # Register not r0-r9
                     operand_errors.append(
                         ("   ** error: invalid register {} **").format(operands[index]))
-            elif 'v' in valid_operand:  # literal value
+            elif 'v' in valid_operand:
+                # Literal value
                 if '8' in operands[index] or '9' in operands[index]:
+                    # Literal not a valid octal value
                     operand_errors.append(
                         ("   ** error: ill-formed literal {} **").format(operands[index]))
-            elif 's' in valid_operand or 'd' in valid_operand:  # identifier
-                if len(operands[index]) > 5:  # identifier too long
+            elif 's' in valid_operand or 'd' in valid_operand:
+                # Identifier
+                if len(operands[index]) > 5:
+                    # Identifier too long
                     operand_errors.append(
                         ("   ** error: ill-formed identifier {} **").format(operands[index]))
-            elif 'lab' in valid_operand:  # label
-                if len(operands[index]) > 5:  # label too long
+            elif 'lab' in valid_operand:
+                # Label
+                if len(operands[index]) > 5:
+                    # Label too long
                     operand_errors.append(
                         ("   ** error: ill-formed label {} **").format(operands[index]))
-                # TODO: bug if operand points to label that is later in program
                 if operands[index] not in self.__labels:
+                    # Referenced label is not in program
                     operand_errors.append(
                         ("   ** warning: branch to non-existant label {} **").format(operands[index]))
                 else:
+                    # Increase reference count for label
                     label_lst = self.__labels[operands[index]]
                     label_lst[1] += 1
                     self.__labels.update(
@@ -153,14 +173,18 @@ class SyntaxChecker:
 
     def check(self, mal_file):
         """Check syntax of MAL program"""
-        self.__labels = {}  # Create empty label dictionary
-        original = self.__read_program(mal_file)
-        stripped = self.__strip_program(original)
+        self.__labels = {}
+        original, stripped = self.__read_program(mal_file)
         evaluated = self.__evaluate_program(stripped)
         self.__write_report(original, stripped, evaluated)
 
 
 if __name__ == "__main__":
-    MAL_FILE = sys.argv[1] + ".mal"
+    ARG = sys.argv[1]
+    MAL_FILE = ""
+    if ".mal" in ARG:
+        MAL_FILE = sys.argv[1]
+    else:
+        MAL_FILE = sys.argv[1] + ".mal"
     SYNTAX_CHECKER = SyntaxChecker()
     SYNTAX_CHECKER.check(MAL_FILE)
