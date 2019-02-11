@@ -21,7 +21,7 @@ MAL = {"LOAD": ['r', 's'],
        "NOOP": [],
        "END": []}
 
-# r0-r8
+# Valid Registers r0-r8
 REGISTERS = ['r' + str(n) for n in range(9)]
 
 
@@ -29,7 +29,7 @@ class SyntaxChecker:
     """MAL syntax checker"""
 
     def __init__(self):
-        self.__labels = None  # stores all labels in the MAL program
+        self.__labels = None # stores all labels in the MAL program
 
     def __read_program(self, mal_file):
         """Opens and reads MAL program file."""
@@ -46,16 +46,13 @@ class SyntaxChecker:
         """Strip blank lines and comments from program."""
         stripped = {}
         for line in original:
-            if ";" in original[line]:
-                # Line contains a comment
+            if ";" in original[line]: # Line contains a comment
                 index = original[line].find(';')
-                if index != 0:
-                    # In-line comment
+                if index != 0: # In-line comment
                     # Remove comment from line
                     stripped.update(
                         {line: original[line][:index - 1]})
-            elif original[line] != '':
-                # Line is not blank and does not contain comment
+            elif original[line] != '': # Line not blank and has no comments
                 stripped.update({line: original[line]})
         return stripped
 
@@ -95,7 +92,7 @@ class SyntaxChecker:
         # Look for labels in program
         for line in stripped:
             first_item = stripped[line].split()[0]
-            if ':' in first_item:
+            if ':' in first_item: # Label
                 # Add label to labels dictionary:
                 # {label_name: [line_num, reference_count]}
                 self.__labels.update({first_item.replace(':', ''): [line, 0]})
@@ -103,19 +100,16 @@ class SyntaxChecker:
         for line in stripped:
             evaluated.update({line: stripped[line]})
             first_item = stripped[line].split()[0]
-            if ":" in first_item:
-                # First item in line is a label
+            if ":" in first_item: # First item in line is a label
                 if len(first_item) > 6:
                     error_line = stripped[line] \
                         + ("\n   ** error: ill-formed label {} \
                             - too long **").format(first_item)
                     evaluated.update({line: error_line})
-            elif stripped[line].split()[0] in MAL.keys():
-                # First item is valid opcode
+            elif stripped[line].split()[0] in MAL.keys(): # First item is valid opcode
                 evaluated_line = self.__evaluate_instruction(stripped[line])
                 evaluated.update({line: evaluated_line})
-            else:
-                # First item is invalid opcode
+            else: # First item is invalid opcode
                 error_line = stripped[line] + \
                     ("\n   ** error: invalid opcode {} **").format(first_item)
                 evaluated.update({line: error_line})
@@ -134,21 +128,21 @@ class SyntaxChecker:
         opcode = instruction.split()[0]
         operands = instruction.replace(',', '').split()[1:]
         # Check for valid number of operands
-        if len(operands) < len(MAL[opcode]):  # too few operands
+        if len(operands) < len(MAL[opcode]): # Too few operands
             if len(MAL[opcode]) == 1:
                 evaluated_line += ("\n   ** error: too few operands \
                     - {} operand expected for {} **").format(len(MAL[opcode]), opcode)
             else:
                 evaluated_line += ("\n   ** error: too few operands \
                     - {} operands expected for {} **").format(len(MAL[opcode]), opcode)
-        elif len(operands) > len(MAL[opcode]):  # too many operands
+        elif len(operands) > len(MAL[opcode]): # Too many operands
             if len(MAL[opcode]) == 1:
                 evaluated_line += ("\n   ** error: too many operands \
                     - {} operand expected for {} **").format(len(MAL[opcode]), opcode)
             else:
                 evaluated_line += ("\n   ** error: too many operands \
                     - {} operands expected for {} **").format(len(MAL[opcode]), opcode)
-        else:  # valid number of operands
+        else: # Valid number of operands
             # Check for errors in operands
             operand_errors = self.__evaluate_operands(opcode, operands)
             # Add operand errors below instruction
@@ -162,24 +156,24 @@ class SyntaxChecker:
         operand_errors = []  # List to store operand errors
         valid_operands = MAL[opcode]  # Valid operands for opcode
         for index, valid_operand in enumerate(valid_operands):
-            if 'r' in valid_operand:
-                # Register
+            if 'r' in valid_operand: # Register
                 if operands[index] not in REGISTERS:
                     # Register not r0-r9
                     operand_errors.append(
-                        ("   ** error: invalid register {} **").format(operands[index]))
-            elif 'v' in valid_operand:  # literal value
-                if not is_octal_num(operands[index]):
+                        ("   ** error: invalid register \
+                            {} **").format(operands[index]))
+            elif 'v' in valid_operand: # Literal value
+                if not self.is_octal_num(operands[index]):
                     operand_errors.append(
                         ("   ** error: ill-formed literal {} \
                             - not an octal number **").format(operands[index]))
-            elif 's' in valid_operand or 'd' in valid_operand:  # identifier
-                if len(operands[index]) > 5:  # identifier too long
+            elif 's' in valid_operand or 'd' in valid_operand: # Identifier
+                if len(operands[index]) > 5: # identifier too long
                     operand_errors.append(
                         ("   ** error: ill-formed identifier {} \
                             - too long **").format(operands[index]))
-            elif 'lab' in valid_operand:  # label
-                if len(operands[index]) > 5:  # label too long
+            elif 'lab' in valid_operand: # Label
+                if len(operands[index]) > 5: # Label too long
                     operand_errors.append(
                         ("   ** error: ill-formed label {} \
                             - too long **").format(operands[index]))
@@ -188,13 +182,20 @@ class SyntaxChecker:
                     operand_errors.append(
                         ("   ** warning: branch to non-existant label \
                             {} **").format(operands[index]))
-                else:
-                    # Increase reference count for label
+                else: # Increase reference count for label
                     label_lst = self.__labels[operands[index]]
                     label_lst[1] += 1
-                    self.__labels.update(
-                        {operands[index]: label_lst})
+                    self.__labels.update({operands[index]: label_lst})
         return operand_errors
+
+    def is_octal_num(self, number):
+        """Returns True if a number is octal and False if not"""
+        valid_octal = [str(n) for n in range(8)] # Valid octal numerals 0-7
+        octal = True
+        for num in str(number):
+            if num not in valid_octal: # Digit in number is not octal
+                octal = False
+        return octal
 
     def check(self, mal_file):
         """Check syntax of MAL program"""
@@ -204,19 +205,8 @@ class SyntaxChecker:
         self.__write_report(original, stripped, evaluated)
 
 
-def is_octal_num(number):
-    """Returns True if a number is octal and False if not"""
-    valid_octal = [str(n) for n in range(8)]
-    octal = True
-    for num in str(number):
-        if num not in valid_octal:
-            octal = False
-    return octal
-
-
 if __name__ == "__main__":
     ARG = sys.argv[1]
-    MAL_FILE = ""
     if ".mal" in ARG:
         MAL_FILE = sys.argv[1]
     else:
