@@ -21,8 +21,8 @@ MAL = {"LOAD": ['r', 's'],
        "NOOP": [],
        "END": []}
 
-# Valid Registers r0-r8
-REGISTERS = ['r' + str(n) for n in range(9)]
+# Valid Registers r0-r7
+REGISTERS = ['r' + str(n) for n in range(8)]
 
 
 class SyntaxChecker:
@@ -110,10 +110,11 @@ class SyntaxChecker:
             evaluated.update({line: stripped[line]})
             first_item = stripped[line].split()[0]
             if ":" in first_item: # First item in line is a label
-                if len(first_item) > 6:
+                label = first_item.replace(':', '')
+                if len(label) > 5:
                     error_line = stripped[line] \
                         + ("\n    ** error: ill-formed label {} \
-- too long **").format(first_item)
+- too long **").format(label)
                     evaluated.update({line: error_line})
             elif stripped[line].split()[0] in MAL.keys(): # First item is valid opcode
                 evaluated_line = self.__evaluate_instruction(stripped[line])
