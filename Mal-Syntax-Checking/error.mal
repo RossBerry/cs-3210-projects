@@ -5,18 +5,21 @@
 ; Adds the numbers 1-16 and 
 ; stores the result in memory 
 ; location named result.
-start:               ; warning, never branched to
+
+; test if : colon works in comments
+
+start:               ; label never branched to
 START                ; invalid opcode
-LOADI r0, 0
-LOADI r1, 0
-LOADI r2, 18         ; ill-formed literal
+LOADI    r0, 0
+LOADI  r10,  0       ; invalid register
+LOADI r2, 18         ; ill-formed literal     
 
 MainLoop:            ; ill-formed label
 INC r1, 1            ; too many operands
 ADD r0, r1           ; too few operands
 BLT r1, r2, MainLoop ; ill-formed label
-BR end
-BR test
+BR End
+BR None              ; branch to non-existent label
 
 end:
 STORE r0, result     ; ill-formed identifier
