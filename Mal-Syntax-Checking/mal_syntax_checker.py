@@ -22,24 +22,24 @@ MAL = {"LOAD": ['R', 'S'],
        "END": []}
 
 ERRORS = {"invalid opcode":
-          "\n    ** error: invalid opcode {} **",
+          "\n    ** error: invalid opcode [{}] **",
           "ill-formed literal":
-          "    ** error: ill-formed literal {} - not an octal number **",
+          "    ** error: ill-formed literal [{}] - not an octal number **",
           "ill-formed identifier":
-          "    ** error: ill-formed identifier {} - too long **",
+          "    ** error: ill-formed identifier [{}] - too long **",
           "ill-formed register":
-          "\n    ** error: invalid register {} **",
+          "    ** error: invalid register [{}] - not R0-R7 **",
           "ill-formed label":
-          "    ** error: ill-formed label {} - too long **",
+          "    ** error: ill-formed label [{}] - too long **",
           "too few operands":
           "\n    ** error: too few operands - {} operands expected for {} **",
           "too many operands":
           "\n    ** error: too many operands - {} operand expected for {} **"}
 
 WARNINGS = {"branch to non-existent label":
-            "    ** warning: branch to non-existent label {} **",
+            "    ** warning: branch to non-existent label [{}] **",
             "label not branched to":
-            "\n    ** warning: label is never branched to **"}
+            "\n    ** warning: label [{}] is never branched to **"}
 
 # Valid Registers R0-R7
 REGISTERS = ['R' + str(n) for n in range(8)]
@@ -180,7 +180,7 @@ class SyntaxChecker:
                 self.__warning_count.update(
                     {warning: self.__warning_count[warning] + 1})
                 new_line = evaluated[self.__labels[label]
-                                     [0]] + WARNINGS[warning]
+                                     [0]] + WARNINGS[warning].format(label)
                 evaluated.update({self.__labels[label][0]: new_line})
         return evaluated
 
