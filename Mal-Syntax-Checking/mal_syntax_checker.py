@@ -26,13 +26,14 @@ MAL = {"LOAD": ['R', 'S'],
        "NOOP": [],
        "END": []}
 
+
 ERRORS = {"invalid opcode":
           "\n    ** error: invalid opcode [{}] **",
           "ill-formed literal":
           "    ** error: ill-formed literal [{}] - not an octal number **",
           "ill-formed identifier too long":
           "    ** error: ill-formed identifier [{}] - too long **",
-        "ill-formed identifier contains non-letter":
+          "ill-formed identifier contains non-letter":
           "    ** error: ill-formed identifier [{}] - contains non-letter character **",
           "ill-formed register":
           "    ** error: invalid register [{}] - not R0-R7 **",
@@ -63,6 +64,43 @@ def is_octal_number(number):
             octal = False
     return octal
 
+def open_mal_file(mal_file):
+    """Opens and reads MAL program file.
+    Returns original lines and lines not containing blanks or comments"""
+    lines = {}
+    with open(mal_file, 'r') as file:
+        # Add lines to dictionary: {line_num: line}
+        for index, line in enumerate(file):
+            lines.update(
+                {str(index + 1): line.replace('\n'or'\r', '')})
+    stripped = strip_mal_program(lines)
+    return lines, stripped
+
+def strip_mal_program(original):
+    """Strip blank lines and comments from program."""
+    stripped = {}
+    for line in original:
+        if ";" in original[line]:  # Line contains a comment
+            index = original[line].find(';')
+            if index != 0:  # In-line comment
+                # Remove comment from line
+                stripped.update({line: original[line][:index - 1]})
+        elif original[line] != '': # Line not blank and has no comments
+            stripped.update({line: original[line]})
+    return stripped
+
+def find_labels(lines):
+    """Find labels in a dictionary of lines from a mal program
+    lines = {line_num: 'line text'}
+    Returns dictionary labels = {line_num: 'label_name'"""
+    # Look for labels in program
+    labels = {}
+    for line_num in lines:
+        first_token = lines[line_num].split()[0]
+        if ':' in first_token:  # Label
+            # Add label to labels dictionary:
+            labels.update({line_num: first_token})
+    return labels
 
 class SyntaxChecker:
     """MAL syntax checker"""
@@ -73,30 +111,6 @@ class SyntaxChecker:
         self.__labels = None  # stores all labels in the MAL program
         self.__error_count = None  # stores count of each type of error
         self.__warning_count = None  # stores count of each type of warning
-
-    def __read_program(self, mal_file):
-        """Opens and reads MAL program file."""
-        lines = {}
-        with open(mal_file, 'r') as file:
-            # Add lines to dictionary: {line_num: line}
-            for index, line in enumerate(file):
-                lines.update(
-                    {str(index + 1): line.replace('\n'or'\r', '')})
-        stripped = self.__strip_program(lines)
-        return lines, stripped
-
-    def __strip_program(self, original):
-        """Strip blank lines and comments from program."""
-        stripped = {}
-        for line in original:
-            if ";" in original[line]:  # Line contains a comment
-                index = original[line].find(';')
-                if index != 0:  # In-line comment
-                    # Remove comment from line
-                    stripped.update({line: original[line][:index - 1]})
-            elif original[line] != '': # Line not blank and has no comments
-                stripped.update({line: original[line]})
-        return stripped
 
     def __generate_report_header(self):
         """Generate report file header"""
@@ -150,16 +164,12 @@ class SyntaxChecker:
             else:
                 file.write("Processing complete - MAL program is valid.")
 
+
     def __evaluate_program(self, stripped):
         """Evaluate syntax for each line in MAL program."""
         evaluated = {}
         # Look for labels in program
-        for line in stripped:
-            first_item = stripped[line].split()[0]
-            if ':' in first_item:  # Label
-                # Add label to labels dictionary:
-                # {label_name: [line_num, reference_count]}
-                self.__labels.update({first_item.replace(':', ''): [line, 0]})
+        self.__labels.update({value: [key, 0] for (key, value) in find_labels(stripped).items()})
         # Check each line in program for valid syntax
         for line in stripped:
             error = None
@@ -297,7 +307,7 @@ class SyntaxChecker:
         self.__warning_count = {key: 0 for key in WARNINGS}
         # Read MAL program file and generate list of original program lines and list with
         # no blank lines or comments.
-        original, stripped = self.__read_program(mal_file)
+        original, stripped = open_mal_file(mal_file)
         # Evaluate the syntax in the stripped program lines
         evaluated = self.__evaluate_program(stripped)
         # Write report with original, stipped, and evaluated program lines
