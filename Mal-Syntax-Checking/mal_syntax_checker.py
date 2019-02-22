@@ -6,6 +6,11 @@ __author__ = "Kenneth Berry"
 import sys
 import datetime
 
+"""
+TODO:
+ - Add support for instructions on same line as labels
+"""
+
 # MAL instructions
 MAL = {"LOAD": ['R', 'S'],
        "LOADI": ['R', 'V'],
@@ -25,12 +30,16 @@ ERRORS = {"invalid opcode":
           "\n    ** error: invalid opcode [{}] **",
           "ill-formed literal":
           "    ** error: ill-formed literal [{}] - not an octal number **",
-          "ill-formed identifier":
+          "ill-formed identifier too long":
           "    ** error: ill-formed identifier [{}] - too long **",
+        "ill-formed identifier contains non-letter":
+          "    ** error: ill-formed identifier [{}] - contains non-letter character **",
           "ill-formed register":
           "    ** error: invalid register [{}] - not R0-R7 **",
-          "ill-formed label":
-          "    ** error: ill-formed label [{}] - too long **",
+          "ill-formed label too long":
+          "\n    ** error: ill-formed label [{}] - too long **",
+          "ill-formed label contains non-letter":
+          "\n    ** error: ill-formed label [{}] - contains non-letter character **",
           "too few operands":
           "\n    ** error: too few operands - {} operands expected for {} **",
           "too many operands":
@@ -59,9 +68,11 @@ class SyntaxChecker:
     """MAL syntax checker"""
 
     def __init__(self):
-        self.__labels = {}  # stores all labels in the MAL program
-        self.__error_count = {}  # stores count of each type of error
-        self.__warning_count = {}  # stores count of each type of warning
+        self.__mal_file = None
+        self.__report_file = None
+        self.__labels = None  # stores all labels in the MAL program
+        self.__error_count = None  # stores count of each type of error
+        self.__warning_count = None  # stores count of each type of warning
 
     def __read_program(self, mal_file):
         """Opens and reads MAL program file."""
@@ -82,24 +93,26 @@ class SyntaxChecker:
                 index = original[line].find(';')
                 if index != 0:  # In-line comment
                     # Remove comment from line
-                    stripped.update(
-                        {line: original[line][:index - 1]})
-            elif original[line] != '':  # Line not blank and has no comments
+                    stripped.update({line: original[line][:index - 1]})
+            elif original[line] != '': # Line not blank and has no comments
                 stripped.update({line: original[line]})
         return stripped
+
+    def __generate_report_header(self):
+        """Generate report file header"""
+        now = datetime.datetime.now()
+        date = str(now.month) + '/' + str(now.day) + '/' + str(now.year)
+        header = self.__mal_file + ' - ' + self.__report_file + ' - ' + \
+            date + ' - ' + __author__ + ' - ' + "CS3210\n"
+        return header
 
     def __write_report(self, original, stripped, evaluated):
         """Generate MAL program error listing section of report, finish up
         report and close report file.
         """
-        mal_file = sys.argv[1] + ".mal"
-        report_file = sys.argv[1] + ".log"
-        now = datetime.datetime.now()
-        date = str(now.month) + '/' + str(now.day) + '/' + str(now.year)
-        header = mal_file + ' - ' + report_file + ' - ' + \
-            date + ' - ' + __author__ + ' - ' + "CS3210\n"
+        header = self.__generate_report_header()
         divider = "\n-------------\n\n"
-        with open(report_file, 'w') as file:
+        with open(self.__report_file, 'w') as file:
             file.write(header)
             file.write(divider)
             file.write("original MAL program listing:\n\n")
@@ -154,10 +167,10 @@ class SyntaxChecker:
             first_item = stripped[line].split()[0]
             if ':' in first_item:  # First item in line is a label
                 label = first_item.replace(':', '')
-                if len(label) > 5:
-                    error = "ill-formed label"
-                    error_line = stripped[line] + '\n' + \
-                        (ERRORS[error]).format(label)
+                error = self.__evaluate_identifier(label)
+                if error:
+                    error = "ill-formed label" + error
+                    error_line = stripped[line] + ERRORS[error].format(label)
                     evaluated.update({line: error_line})
             elif stripped[line].split()[0].upper() in MAL:
                 # First item is valid opcode
@@ -200,8 +213,7 @@ class SyntaxChecker:
                 evaluated_line += (ERRORS[error].replace("operands", "operand", 2).replace(
                     "operand", "operands", 1)).format(len(MAL[opcode]), opcode)
             else:
-                evaluated_line += (ERRORS[error]
-                                   ).format(len(MAL[opcode]), opcode)
+                evaluated_line += (ERRORS[error]).format(len(MAL[opcode]), opcode)
             self.__error_count.update(
                 {error: self.__error_count[error] + 1})
         else:  # Valid number of operands
@@ -211,6 +223,7 @@ class SyntaxChecker:
             if operand_errors:
                 for operand_error in operand_errors:
                     evaluated_line += '\n' + operand_error
+                    break # stop after the first error in the line
         return evaluated_line
 
     def __evaluate_operands(self, opcode, operands):
@@ -218,38 +231,30 @@ class SyntaxChecker:
         operand_errors = []  # List to store operand errors
         valid_operands = MAL[opcode]  # Valid operands for opcode
         for index, valid_operand in enumerate(valid_operands):
+            operand = operands[index]
             error = None
             warning = None
             if 'R' in valid_operand:  # Register
-                if operands[index].upper() not in REGISTERS:
-                    # Register not R0-R7
-                    error = "ill-formed register"
-                    operand_errors.append(
-                        (ERRORS[error]).format(operands[index]))
+                if operand.upper() not in REGISTERS: # Not R0-R7
+                    error = "ill-formed register"         
             elif 'V' in valid_operand:  # Literal value
-                if not is_octal_number(operands[index]):
+                if not is_octal_number(operand):
                     error = "ill-formed literal"
-                    operand_errors.append(
-                        (ERRORS[error]).format(operands[index]))
             elif 'S' in valid_operand or 'D' in valid_operand:  # Identifier
-                if len(operands[index]) > 5:  # identifier too long
-                    error = "ill-formed identifier"
-                    operand_errors.append(
-                        (ERRORS[error]).format(operands[index]))
+                error = self.__evaluate_identifier(operand)
+                if error:
+                    error = "ill-formed identifier" + error
             elif 'LAB' in valid_operand:  # Label
-                if len(operands[index]) > 5:  # Label too long
-                    error = "ill-formed label"
-                    operand_errors.append(
-                        (ERRORS[error]).format(operands[index]))
-                if operands[index].upper() not in [label.upper() for label in self.__labels]:
+                error = self.__evaluate_identifier(operand)
+                if error:
+                    error = "ill-formed label" + error
+                if operand.casefold() not in [label.casefold() for label in self.__labels]:
                     # Referenced label is not in label reference dictionary
                     warning = "branch to non-existent label"
-                    operand_errors.append(
-                        (WARNINGS[warning]).format(operands[index]))
                 else:
                     # Increase reference count for label
                     for label_index, key in enumerate(self.__labels.keys()):
-                        if operands[index].upper() == key.upper():
+                        if operand.casefold() == key.casefold():
                             keys = [key for key in self.__labels]
                             label_key = keys[label_index]
                             label_reference_list = self.__labels[label_key]
@@ -257,17 +262,34 @@ class SyntaxChecker:
                             self.__labels.update(
                                 {label_key: label_reference_list})
             if error:
+                # Increment error count
+                operand_errors.append(
+                    (ERRORS[error]).format(operand))
                 self.__error_count.update(
                     {error: self.__error_count[error] + 1})
             if warning:
+                # Increment warning count
+                operand_errors.append(
+                    (WARNINGS[warning]).format(operand))
                 self.__warning_count.update(
                     {warning: self.__warning_count[warning] + 1})
         return operand_errors
 
-    def check(self, mal_file):
+    def __evaluate_identifier(self, string):
+        """Check if identifier is valid - if valid return True
+                                        - else return specific error
+        """
+        if len(string) > 5:
+            return " too long"
+        elif not string.isalpha():
+            return " contains non-letter"
+        return None
+
+    def check(self, mal_file, report_file):
         """Check syntax of MAL program"""
-        # Reset label reference dictionary - so that this instance can check multiple
-        # MAL programs
+        self.__mal_file = mal_file
+        self.__report_file = report_file
+        # Reset label reference dictionary for new mal_file
         self.__labels = {}
         # Copy keys from ERRORS dictionary and set each count to 0
         self.__error_count = {key: 0 for key in ERRORS}
@@ -289,6 +311,7 @@ if __name__ == "__main__":
         MAL_FILE = sys.argv[1]
     else:
         # ADD .mal suffix to ARG
-        MAL_FILE = sys.argv[1] + ".mal"
+        MAL_FILE = ARG + ".mal"
+    REPORT_FILE = ARG + ".log"
     SYNTAX_CHECKER = SyntaxChecker()
-    SYNTAX_CHECKER.check(MAL_FILE)
+    SYNTAX_CHECKER.check(MAL_FILE, REPORT_FILE)
