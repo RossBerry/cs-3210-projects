@@ -102,6 +102,14 @@ def find_labels(lines):
             labels.update({line_num: first_token})
     return labels
 
+class SyntaxReport:
+    """Generates a report based orignal, stripped, and evaluated lines
+    from SyntaxChecker"""
+
+    def __init__(self, log=None, console=None):
+        pass
+
+
 class SyntaxChecker:
     """MAL syntax checker"""
 
