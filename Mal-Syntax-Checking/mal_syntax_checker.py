@@ -1,5 +1,5 @@
 """
-mal_syntax_checker.py
+MAL Syntax Checker
 """
 __author__ = "Kenneth Berry"
 
@@ -11,7 +11,11 @@ TODO:
  - Add support for instructions on same line as labels
 """
 
-# MAL instructions
+#########################################################################################
+#                                 Module Constants                                      #
+#########################################################################################
+
+# Valid MAL instructions
 MAL = {"LOAD": ['R', 'S'],
        "LOADI": ['R', 'V'],
        "STORE": ['R', 'D'],
@@ -26,7 +30,10 @@ MAL = {"LOAD": ['R', 'S'],
        "NOOP": [],
        "END": []}
 
+# Valid registers R0-R7
+REGISTERS = ['R' + str(n) for n in range(8)]
 
+# Possible errors
 ERRORS = {"invalid opcode":
           "\n    ** error: invalid opcode [{}] **",
           "ill-formed literal":
@@ -46,13 +53,29 @@ ERRORS = {"invalid opcode":
           "too many operands":
           "\n    ** error: too many operands - {} operand expected for {} **"}
 
+# Possible warnings
 WARNINGS = {"branch to non-existent label":
             "    ** warning: branch to non-existent label [{}] **",
             "label not branched to":
             "\n    ** warning: label [{}] is never branched to **"}
 
-# Valid Registers R0-R7
-REGISTERS = ['R' + str(n) for n in range(8)]
+#########################################################################################
+#                                 Module Functions                                      #
+#########################################################################################
+
+
+def find_labels(lines):
+    """Find labels in a dictionary of lines from a mal program
+    lines = {line_num: 'line text'}
+    Returns dictionary labels = {line_num: 'label_name'"""
+    # Look for labels in program
+    labels = {}
+    for line_num in lines:
+        first_token = lines[line_num].split()[0]
+        if ':' in first_token:  # Label
+            # Add label to labels dictionary:
+            labels.update({line_num: first_token})
+    return labels
 
 
 def is_octal_number(number):
@@ -90,92 +113,15 @@ def strip_mal_program(original):
             stripped.update({line: original[line]})
     return stripped
 
-
-def find_labels(lines):
-    """Find labels in a dictionary of lines from a mal program
-    lines = {line_num: 'line text'}
-    Returns dictionary labels = {line_num: 'label_name'"""
-    # Look for labels in program
-    labels = {}
-    for line_num in lines:
-        first_token = lines[line_num].split()[0]
-        if ':' in first_token:  # Label
-            # Add label to labels dictionary:
-            labels.update({line_num: first_token})
-    return labels
-
-
-class SyntaxReport:
-    """Generates a report based original, stripped, and evaluated lines
-    from SyntaxChecker"""
-
-    def __init__(self, mal_file, checker_output):
-        self.__mal_file = mal_file
-        self.__report_file = mal_file.replace(".mal", ".log")
-        self.__sections, self.__counts = checker_output
-        self.__report = self.__make_report()
-
-    def __make_report(self):
-        """Make report"""
-        report = str()
-        divider = "\n-------------\n\n"
-        # Make header section and add to
-        report = report.join(self.__make_header())
-        print(report)
-        # Add original, stripped, and error report sections to report
-        section_names = ["original MAL program listing:",
-                         "stripped MAL program listing:",
-                         "error report listing:"]
-        for index, section in enumerate(self.__sections):
-            report = report.join(divider + section_names[index] + "\n\n")
-            for line in section:
-                report = report.join(line)
-                if int(line) < 10:
-                    report = report.join('.  ' + section[line] + '\n')
-                else:
-                    report = report.join('. ' + section[line] + '\n')
-        report = report.join(self.__make_footer())
-        return report
-
-    def __make_header(self):
-        """Generate report file header"""
-        now = datetime.datetime.now()
-        date = str(now.month) + '/' + str(now.day) + '/' + str(now.year)
-        header = self.__mal_file + ' - ' + self.__report_file + ' - ' + \
-            date + ' - ' + __author__ + ' - ' + "CS3210\n"
-        return header
-
-    def __make_footer(self):
-        footer = str()
-        error_counts, warning_counts = self.__counts
-        total_errors = sum([value for value in error_counts.values()])
-        footer = footer.join(("total errors = {}\n").format(total_errors))
-        if total_errors > 0:
-            for error in error_counts:
-                error_count = error_counts[error]
-                if error_count > 0:
-                    footer = footer.join(("   {} {}\n").format(error_count, error))
-            footer = footer.join("Processing complete - MAL program is not valid.")
-        else:
-            footer = footer.join("Processing complete - MAL program is valid.")
-        return footer
-
-    def write_to_file(self):
-        """Write syntax report to file"""
-        with open(self.__report_file, 'w') as file:
-            file.write(self.__report)
-
-    def print_to_console(self):
-        """Print syntax report to console"""
-        print(self.__report)
+#########################################################################################
+#                                   Module Classes                                      #
+#########################################################################################
 
 
 class SyntaxChecker:
     """MAL syntax checker"""
 
     def __init__(self):
-        self.__mal_file = None
-        self.__report_file = None
         self.__labels = None  # stores all labels in the MAL program
         self.__error_count = None  # stores count of each type of error
         self.__warning_count = None  # stores count of each type of warning
@@ -191,10 +137,13 @@ class SyntaxChecker:
             error = None
             evaluated.update({line: stripped[line]})
             first_item = stripped[line].split()[0]
-            if ':' in first_item:  # First item in line is a label
+            if ':' in first_item:
+                # First item in line is a label
                 label = first_item.replace(':', '')
+                # Evaluate label
                 error = self.__evaluate_identifier(label)
                 if error:
+                    # If there is an error, add the specific type of error
                     error = "ill-formed label" + error
                     error_line = stripped[line] + ERRORS[error].format(label)
                     evaluated.update({line: error_line})
@@ -314,7 +263,6 @@ class SyntaxChecker:
 
     def check_file(self, mal_file):
         """Check syntax of MAL program"""
-        self.__mal_file = mal_file
         # Reset label reference dictionary for new mal_file
         self.__labels = {}
         # Copy keys from ERRORS dictionary and set each count to 0
@@ -328,27 +276,95 @@ class SyntaxChecker:
         # Evaluate the syntax in the stripped program lines
         evaluated_lines = self.__evaluate_program(stripped_lines)
 
+        # Package output
         lines = (original_lines, stripped_lines, evaluated_lines)
         counts = (self.__error_count, self.__warning_count)
         return lines, counts
 
 
+class SyntaxReport:
+    """Generates a report based original, stripped, and evaluated lines
+    from SyntaxChecker"""
+
+    def __init__(self, mal_file, checker_output):
+        self.__mal_file = mal_file
+        self.__report_file = mal_file.replace(".mal".casefold(), ".log")
+        self.__sections, self.__counts = checker_output
+        self.__report = self.__make_report()
+
+    def __make_report(self):
+        """Make report"""
+        report_lines = list()
+        divider = "\n-------------\n\n"
+        # Make header section and add to
+        report_lines.append(self.__make_header())
+        # Add original, stripped, and error report sections to report
+        section_names = ["original MAL program listing:",
+                         "stripped MAL program listing:",
+                         "error report listing:"]
+        for index, section in enumerate(self.__sections):
+            report_lines.append(divider + section_names[index] + "\n\n")
+            for line in section:
+                report_lines.append(line)
+                if int(line) < 10:
+                    report_lines.append('.  ' + section[line] + '\n')
+                else:
+                    report_lines.append('. ' + section[line] + '\n')
+        report_lines.append(self.__make_footer())
+        report = str()
+        for line in report_lines:
+            report = report + line
+        return report
+
+    def __make_header(self):
+        """Generate report file header"""
+        now = datetime.datetime.now()
+        date = str(now.month) + '/' + str(now.day) + '/' + str(now.year)
+        header = self.__mal_file + ' - ' + self.__report_file + ' - ' + \
+            date + ' - ' + __author__ + ' - ' + "CS3210\n"
+        return header
+
+    def __make_footer(self):
+        footer_lines = list()
+        error_counts, warning_counts = self.__counts
+        total_errors = sum([value for value in error_counts.values()])
+        footer_lines.append(("total errors = {}\n").format(total_errors))
+        if total_errors > 0:
+            for error in error_counts:
+                error_count = error_counts[error]
+                if error_count > 0:
+                    footer_lines.append(
+                        ("   {} {}\n").format(error_count, error))
+            footer_lines.append(
+                "Processing complete - MAL program is not valid.")
+        else:
+            footer_lines.append("Processing complete - MAL program is valid.")
+        footer = str()
+        for line in footer_lines:
+            footer = footer + line
+        return footer
+
+    def write_to_file(self):
+        """Write syntax report to file"""
+        with open(self.__report_file, 'w') as file:
+            file.write(self.__report)
+
+    def print_to_console(self):
+        """Print syntax report to console"""
+        print(self.__report)
+
+
 if __name__ == "__main__":
-    ARG = sys.argv[1]  # MAL program mile
-    if ".mal" in ARG:
-        # ARG included .mal suffix
-        MAL = sys.argv[1]
+    if len(sys.argv) > 1:
+        FILE = sys.argv[1]  # MAL program file
+        if ".mal" not in FILE.lower():
+            # ADD .mal suffix to ARG
+            FILE = FILE + ".mal"
+        CHECKER = SyntaxChecker()
+        REPORT = SyntaxReport(FILE, CHECKER.check_file(FILE))
+        REPORT.write_to_file()
+        REPORT.print_to_console()
     else:
-        # ADD .mal suffix to ARG
-        MAL = ARG + ".mal"
-
-    CHECKER = SyntaxChecker()
-    REPORT = SyntaxReport(MAL, CHECKER.check_file(MAL))
-    REPORT.write_to_file()
-    REPORT.print_to_console()
-
-    # sections, counts = CHECKER.check_file(MAL)
-    # for section in sections:
-    #     for line in section:
-    #         print(line, section[line])
-
+        print("** ERROR: Missing MAL filename argument **\n" + \
+              "Valid format: \n\
+            python mal_syntax_checker.py filename")
