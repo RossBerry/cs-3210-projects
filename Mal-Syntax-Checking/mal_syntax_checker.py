@@ -64,7 +64,8 @@ def is_octal_number(number):
             octal = False
     return octal
 
-def open_mal_file(mal_file):
+
+def open_file(mal_file):
     """Opens and reads MAL program file.
     Returns original lines and lines not containing blanks or comments"""
     lines = {}
@@ -73,8 +74,8 @@ def open_mal_file(mal_file):
         for index, line in enumerate(file):
             lines.update(
                 {str(index + 1): line.replace('\n'or'\r', '')})
-    stripped = strip_mal_program(lines)
-    return lines, stripped
+    return lines
+
 
 def strip_mal_program(original):
     """Strip blank lines and comments from program."""
@@ -85,9 +86,10 @@ def strip_mal_program(original):
             if index != 0:  # In-line comment
                 # Remove comment from line
                 stripped.update({line: original[line][:index - 1]})
-        elif original[line] != '': # Line not blank and has no comments
+        elif original[line] != '':  # Line not blank and has no comments
             stripped.update({line: original[line]})
     return stripped
+
 
 def find_labels(lines):
     """Find labels in a dictionary of lines from a mal program
@@ -102,12 +104,72 @@ def find_labels(lines):
             labels.update({line_num: first_token})
     return labels
 
+
 class SyntaxReport:
-    """Generates a report based orignal, stripped, and evaluated lines
+    """Generates a report based original, stripped, and evaluated lines
     from SyntaxChecker"""
 
-    def __init__(self, log=None, console=None):
-        pass
+    def __init__(self, mal_file, checker_output):
+        self.__mal_file = mal_file
+        self.__report_file = mal_file.replace(".mal", ".log")
+        self.__sections, self.__counts = checker_output
+        self.__report = str()
+
+    def __make_report(self):
+        """Make report"""
+        divider = "\n-------------\n\n"
+        # Make header section and add to
+        self.__report.join(self.__make_header())
+
+        # Add original, stripped, and error report sections to report
+        section_names = ["original MAL program listing:",
+                         "stripped MAL program listing:",
+                         "error report listing:"]
+        sections = {}
+        for index, section in enumerate(self.__sections):
+            sections.update({section_names[index]: section})
+        for section_name in sections:
+            self.__report.join(divider + section_name + "\n\n")
+            for lines in section_name:
+                for line in lines:
+                    self.__report.join(line)
+                    if int(line) < 10:
+                        self.__report.join('.  ' + lines[line] + '\n')
+                    else:
+                        self.__report.join('. ' + lines[line] + '\n')
+        self.__report.join(self.__make_footer())
+
+    def __make_header(self):
+        """Generate report file header"""
+        now = datetime.datetime.now()
+        date = str(now.month) + '/' + str(now.day) + '/' + str(now.year)
+        header = self.__mal_file + ' - ' + self.__report_file + ' - ' + \
+            date + ' - ' + __author__ + ' - ' + "CS3210\n"
+        return header
+
+    def __make_footer(self):
+        footer = str()
+        error_counts, warning_counts = self.__counts
+        total_errors = sum(error_counts)
+        footer.join(("total errors = {}\n").format(total_errors))
+        if total_errors > 0:
+            for error in error_counts:
+                error_count = error_counts[error]
+                if error_count > 0:
+                    footer.join(("   {} {}\n").format(error_count, error))
+            footer.join("Processing complete - MAL program is not valid.")
+        else:
+            footer.join("Processing complete - MAL program is valid.")
+        return footer
+
+    def write_to_file(self):
+        """Write syntax report to file"""
+        with open(self.__report_file, 'w') as file:
+            file.write(self.__report)
+
+    def print_to_console(self):
+        """Print syntax report to console"""
+        print(self.__report)
 
 
 class SyntaxChecker:
@@ -120,64 +182,12 @@ class SyntaxChecker:
         self.__error_count = None  # stores count of each type of error
         self.__warning_count = None  # stores count of each type of warning
 
-    def __generate_report_header(self):
-        """Generate report file header"""
-        now = datetime.datetime.now()
-        date = str(now.month) + '/' + str(now.day) + '/' + str(now.year)
-        header = self.__mal_file + ' - ' + self.__report_file + ' - ' + \
-            date + ' - ' + __author__ + ' - ' + "CS3210\n"
-        return header
-
-    def __write_report(self, original, stripped, evaluated):
-        """Generate MAL program error listing section of report, finish up
-        report and close report file.
-        """
-        header = self.__generate_report_header()
-        divider = "\n-------------\n\n"
-        with open(self.__report_file, 'w') as file:
-            file.write(header)
-            file.write(divider)
-            file.write("original MAL program listing:\n\n")
-            for line in original:
-                file.write(line)
-                if int(line) < 10:
-                    file.write('.  ' + original[line] + '\n')
-                else:
-                    file.write('. ' + original[line] + '\n')
-            file.write(divider)
-            file.write("stripped MAL program listing:\n\n")
-            for line in stripped:
-                file.write(line)
-                if int(line) < 10:
-                    file.write('.  ' + stripped[line] + '\n')
-                else:
-                    file.write('. ' + stripped[line] + '\n')
-            file.write(divider)
-            file.write("error report listing:\n\n")
-            for line in evaluated:
-                file.write(line)
-                if int(line) < 10:
-                    file.write('.  ' + evaluated[line] + '\n')
-                else:
-                    file.write('. ' + evaluated[line] + '\n')
-            file.write(divider)
-            total_errors = sum(self.__error_count.values())
-            file.write(("total errors = {}\n").format(total_errors))
-            if total_errors > 0:
-                for error in self.__error_count:
-                    error_count = self.__error_count[error]
-                    if error_count > 0:
-                        file.write(("   {} {}\n").format(error_count, error))
-                file.write("Processing complete - MAL program is not valid.")
-            else:
-                file.write("Processing complete - MAL program is valid.")
-
-
     def __evaluate_program(self, stripped):
         """Evaluate syntax for each line in MAL program."""
         evaluated = {}
         # Look for labels in program
-        self.__labels.update({value: [key, 0] for (key, value) in find_labels(stripped).items()})
+        self.__labels.update({value: [key, 0] for (
+            key, value) in find_labels(stripped).items()})
         # Check each line in program for valid syntax
         for line in stripped:
             error = None
@@ -231,7 +241,8 @@ class SyntaxChecker:
                 evaluated_line += (ERRORS[error].replace("operands", "operand", 2).replace(
                     "operand", "operands", 1)).format(len(MAL[opcode]), opcode)
             else:
-                evaluated_line += (ERRORS[error]).format(len(MAL[opcode]), opcode)
+                evaluated_line += (ERRORS[error]
+                                   ).format(len(MAL[opcode]), opcode)
             self.__error_count.update(
                 {error: self.__error_count[error] + 1})
         else:  # Valid number of operands
@@ -241,7 +252,7 @@ class SyntaxChecker:
             if operand_errors:
                 for operand_error in operand_errors:
                     evaluated_line += '\n' + operand_error
-                    break # stop after the first error in the line
+                    break  # stop after the first error in the line
         return evaluated_line
 
     def __evaluate_operands(self, opcode, operands):
@@ -253,8 +264,8 @@ class SyntaxChecker:
             error = None
             warning = None
             if 'R' in valid_operand:  # Register
-                if operand.upper() not in REGISTERS: # Not R0-R7
-                    error = "ill-formed register"         
+                if operand.upper() not in REGISTERS:  # Not R0-R7
+                    error = "ill-formed register"
             elif 'V' in valid_operand:  # Literal value
                 if not is_octal_number(operand):
                     error = "ill-formed literal"
@@ -303,7 +314,7 @@ class SyntaxChecker:
             return " contains non-letter"
         return None
 
-    def check(self, mal_file, report_file):
+    def check_file(self, mal_file, report_file):
         """Check syntax of MAL program"""
         self.__mal_file = mal_file
         self.__report_file = report_file
@@ -315,11 +326,14 @@ class SyntaxChecker:
         self.__warning_count = {key: 0 for key in WARNINGS}
         # Read MAL program file and generate list of original program lines and list with
         # no blank lines or comments.
-        original, stripped = open_mal_file(mal_file)
+        original_lines = open_file(mal_file)
+        stripped_lines = strip_mal_program(original_lines)
         # Evaluate the syntax in the stripped program lines
-        evaluated = self.__evaluate_program(stripped)
-        # Write report with original, stipped, and evaluated program lines
-        self.__write_report(original, stripped, evaluated)
+        evaluated_lines = self.__evaluate_program(stripped_lines)
+        
+        lines = (original_lines, stripped_lines, evaluated_lines)
+        counts = (self.__error_count, self.__warning_count)
+        return lines, counts
 
 
 if __name__ == "__main__":
@@ -331,5 +345,5 @@ if __name__ == "__main__":
         # ADD .mal suffix to ARG
         MAL_FILE = ARG + ".mal"
     REPORT_FILE = ARG + ".log"
-    SYNTAX_CHECKER = SyntaxChecker()
-    SYNTAX_CHECKER.check(MAL_FILE, REPORT_FILE)
+    CHECKER = SyntaxChecker()
+    REPORT = SyntaxReport(MAL_FILE, CHECKER.check_file(MAL_FILE))
