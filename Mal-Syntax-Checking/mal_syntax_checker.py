@@ -113,31 +113,29 @@ class SyntaxReport:
         self.__mal_file = mal_file
         self.__report_file = mal_file.replace(".mal", ".log")
         self.__sections, self.__counts = checker_output
-        self.__report = str()
+        self.__report = self.__make_report()
 
     def __make_report(self):
         """Make report"""
+        report = str()
         divider = "\n-------------\n\n"
         # Make header section and add to
-        self.__report.join(self.__make_header())
-
+        report = report.join(self.__make_header())
+        print(report)
         # Add original, stripped, and error report sections to report
         section_names = ["original MAL program listing:",
                          "stripped MAL program listing:",
                          "error report listing:"]
-        sections = {}
         for index, section in enumerate(self.__sections):
-            sections.update({section_names[index]: section})
-        for section_name in sections:
-            self.__report.join(divider + section_name + "\n\n")
-            for lines in section_name:
-                for line in lines:
-                    self.__report.join(line)
-                    if int(line) < 10:
-                        self.__report.join('.  ' + lines[line] + '\n')
-                    else:
-                        self.__report.join('. ' + lines[line] + '\n')
-        self.__report.join(self.__make_footer())
+            report = report.join(divider + section_names[index] + "\n\n")
+            for line in section:
+                report = report.join(line)
+                if int(line) < 10:
+                    report = report.join('.  ' + section[line] + '\n')
+                else:
+                    report = report.join('. ' + section[line] + '\n')
+        report = report.join(self.__make_footer())
+        return report
 
     def __make_header(self):
         """Generate report file header"""
@@ -150,16 +148,16 @@ class SyntaxReport:
     def __make_footer(self):
         footer = str()
         error_counts, warning_counts = self.__counts
-        total_errors = sum(error_counts)
-        footer.join(("total errors = {}\n").format(total_errors))
+        total_errors = sum([value for value in error_counts.values()])
+        footer = footer.join(("total errors = {}\n").format(total_errors))
         if total_errors > 0:
             for error in error_counts:
                 error_count = error_counts[error]
                 if error_count > 0:
-                    footer.join(("   {} {}\n").format(error_count, error))
-            footer.join("Processing complete - MAL program is not valid.")
+                    footer = footer.join(("   {} {}\n").format(error_count, error))
+            footer = footer.join("Processing complete - MAL program is not valid.")
         else:
-            footer.join("Processing complete - MAL program is valid.")
+            footer = footer.join("Processing complete - MAL program is valid.")
         return footer
 
     def write_to_file(self):
@@ -314,10 +312,9 @@ class SyntaxChecker:
             return " contains non-letter"
         return None
 
-    def check_file(self, mal_file, report_file):
+    def check_file(self, mal_file):
         """Check syntax of MAL program"""
         self.__mal_file = mal_file
-        self.__report_file = report_file
         # Reset label reference dictionary for new mal_file
         self.__labels = {}
         # Copy keys from ERRORS dictionary and set each count to 0
@@ -330,7 +327,7 @@ class SyntaxChecker:
         stripped_lines = strip_mal_program(original_lines)
         # Evaluate the syntax in the stripped program lines
         evaluated_lines = self.__evaluate_program(stripped_lines)
-        
+
         lines = (original_lines, stripped_lines, evaluated_lines)
         counts = (self.__error_count, self.__warning_count)
         return lines, counts
@@ -340,10 +337,18 @@ if __name__ == "__main__":
     ARG = sys.argv[1]  # MAL program mile
     if ".mal" in ARG:
         # ARG included .mal suffix
-        MAL_FILE = sys.argv[1]
+        MAL = sys.argv[1]
     else:
         # ADD .mal suffix to ARG
-        MAL_FILE = ARG + ".mal"
-    REPORT_FILE = ARG + ".log"
+        MAL = ARG + ".mal"
+
     CHECKER = SyntaxChecker()
-    REPORT = SyntaxReport(MAL_FILE, CHECKER.check_file(MAL_FILE))
+    REPORT = SyntaxReport(MAL, CHECKER.check_file(MAL))
+    REPORT.write_to_file()
+    REPORT.print_to_console()
+
+    # sections, counts = CHECKER.check_file(MAL)
+    # for section in sections:
+    #     for line in section:
+    #         print(line, section[line])
+
