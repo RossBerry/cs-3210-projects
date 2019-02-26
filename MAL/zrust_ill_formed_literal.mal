@@ -1,0 +1,9 @@
+; Ayako Zrust
+; Error type: #6 ill-formed literal: a numeric literal is invalid for octal
+
+          LOADI     r0, 18   ; 18 does not exist in octal
+          LOADI     r1, TEST ; TEST is not a numeric value
+          ADD       r2, r0, r1
+          STORE     R2, TOTAL
+
+          END
