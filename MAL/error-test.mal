@@ -1,0 +1,28 @@
+; Kenneth Berry
+; 
+; several errors
+;
+; Adds the numbers 1-16 and 
+; stores the result in memory 
+; location named result.
+
+; test if : colon works in comments
+
+start:               ; label never branched to
+START                ; invalid opcode
+LOADI    R0, 0       ; test : colon in in-line comment
+LOADI  R10,  0       ; invalid register
+LOADI r2, 18         ; ill-formed literal     
+
+MainLoop:            ; ill-formed label - too long
+INC R1, 1            ; too many operands
+ADD r0, r1           ; too few operands
+BLT r1, r2, MainLoop ; ill-formed label - too long
+BR End
+BR None              ; branch to non-existent label
+
+test1:               ; ill-formed label - contains number
+
+end:
+STORE r0, result     ; ill-formed identifier - too long
+END

@@ -1,0 +1,15 @@
+;Invalid opcode/John Afana
+
+LODI      R1, 23
+
+LOADI   R3, 88
+
+LOOP:
+
+ADD       R2, R1, R1
+
+BLT         R2, R3, LOOP:
+
+STRE      R2, AREA
+
+END 

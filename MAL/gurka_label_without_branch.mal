@@ -1,0 +1,7 @@
+; label without branch statement / Gurka
+
+LOAD R5, DATA
+
+INC R5
+
+X: STORE R5, DATA

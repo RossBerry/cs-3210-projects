@@ -1,0 +1,17 @@
+;;Program 1: many one type errors
+
+;; Error: too many operands / Krzysztof Rabka
+
+    LOADI    R1, 10                 ; loads octal 10 to R1
+
+    LOADI    R2, 14, 10           ; too many operands
+
+    ADD       R3, R1, R2, R1    ; too many operands
+
+    DEC       R3, R2                 ; too many operands
+
+    STORE  R3, R6, R1           ; too many operands
+
+
+
+    END

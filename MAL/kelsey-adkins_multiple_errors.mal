@@ -1,0 +1,14 @@
+;program calculates x + 9, compares to z and if < z stores the value in y
+LOAD R0,X
+
+     LOAD R1,9
+
+     ADD R0, R1
+
+     LOAD R4, Z
+
+GREATER             BGT R3, R4, Halt
+
+               STORE R3, Y
+
+HALT      END

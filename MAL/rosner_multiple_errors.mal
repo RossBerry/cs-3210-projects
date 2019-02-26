@@ -1,0 +1,13 @@
+LoadI R1, =A 	;Load memory from A
+		;LoadI is trying to initiate a load imediate value
+		;But there is no imediate value being loaded, rather 
+		;There is a memory location
+
+Lod R2, =B 	;Load memory from B
+		;This load statement has an opcode error because it cannot find 'Lod'. 
+		;'Lod' is not recognized by the compiler and a classic syntax error occurs.
+
+LoadI R3, 5 	;Load the number 5 into R3
+Add R4, R1, R2	;Adds a and b and places the sum into R4
+Mul R5, R3, R4	;Multiplies sum of a+b by the number 5 and stores into R5
+Str R5, =final	;Stores the final product into memory named 'final'

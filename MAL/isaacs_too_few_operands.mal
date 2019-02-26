@@ -1,0 +1,13 @@
+ADD R1,R0,R1
+
+SUB R0,R3 ;
+
+INC R0
+
+DEC R0
+
+LOAD R0,R7
+
+LOADI R2 ;
+
+BR ;

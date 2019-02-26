@@ -1,0 +1,13 @@
+; luke randazzo, error types are listed
+
+LOADI R0, 92 ; invalid immediate value, should be in octal
+
+LOAD R1, loc1 ; invalid identifier
+
+INC r1 ; invalid register
+
+DEC R1, ; misplaced comma
+
+ADD loc, R0, R1 ; invalid operand: should be register
+
+SUB R0 R1, R2 ; missing comma between operands

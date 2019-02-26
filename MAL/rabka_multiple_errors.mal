@@ -1,0 +1,23 @@
+;;Program 2: many errors of different types
+
+        LOAD    R0
+
+        LOADI   R1, R0
+
+        LOAD    R2, #7
+
+LOOP;
+
+        BGT    R0, R1, n1234
+
+        R1, R0, R1
+
+        ADD
+
+        INC      5
+
+        STOREIT
+
+        BR
+
+END

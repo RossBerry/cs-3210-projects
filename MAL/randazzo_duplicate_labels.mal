@@ -1,0 +1,13 @@
+; luke randazzo: Duplicate labels
+
+LOOP: LOADI R0, 72
+
+LOAD R1, lab
+
+LOOP: ADD R2, R1, R0
+
+BEQ R2, R1, LOOP
+
+LOOP: SUB R2, R1, R0
+
+;comment

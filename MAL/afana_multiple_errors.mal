@@ -1,0 +1,27 @@
+;PROGRAM WITH MULTIPlE ERRORS SEE COMMENTS/JOHN AFANA
+
+LOADI   R0, 5
+
+ADD       RO, RO, RO         ; INVALID REGISTER
+
+LOADI   R1, 2
+
+LOADI R4, 1
+
+ADD       R2, R1, R4
+
+INC         R1
+
+LOOP1:                                 ; INVALID CHARACTER IN LABEL
+
+ADD       R2, R2, R1
+
+INC         R1
+
+BLT         R1, R0, LOOP1    ; INVALID LABEL
+
+ADD       R2, R2, R1
+
+STORE   R2, SUM
+
+END

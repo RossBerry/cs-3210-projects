@@ -1,0 +1,19 @@
+;; program calculates x = (a + b) – c
+
+;; values a, b, and c are loaded from memory
+
+;; x is calculated and stored in memory
+
+     LOAD R0, A
+
+     LOAD R1, B
+
+     ADD R0, R0, R1
+
+     LOAD R1, C
+
+     SUB R0, R0, R1
+
+STORE RO, X
+
+     END

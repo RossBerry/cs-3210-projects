@@ -1,0 +1,11 @@
+;; Bradley Isaacs
+
+ADD R1 ;**Too few**
+
+SUB R3,R7,R4,R3 ;**Too many**
+
+SSB R3,R7,R4 ;**Invalid opCode**
+
+LOADI R1,R0 ;**ill-formed literal**
+
+ADD R0,R1,1rock ;**ill-formed identifier**
