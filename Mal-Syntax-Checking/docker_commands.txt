@@ -1,2 +1,0 @@
-docker build -t app .
-docker run -it --rm --name running_app app
