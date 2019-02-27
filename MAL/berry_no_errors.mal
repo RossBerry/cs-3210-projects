@@ -1,6 +1,6 @@
-;; A valid program with no errors or warnings.
-
 ;; Kenneth Berry
+
+;; A valid program with no errors or warnings.
 
 LOAD R1, COUNT
 INC R1

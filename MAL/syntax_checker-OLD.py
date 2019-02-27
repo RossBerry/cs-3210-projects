@@ -8,7 +8,6 @@ import datetime
 
 """
 TODO:
- - Misplaced commas
  - duplicate labels
  - no warnings after errors
 """
@@ -37,33 +36,33 @@ REGISTERS = ['R' + str(n) for n in range(8)]
 
 # Possible errors
 ERRORS = {"invalid opcode":
-          "\n    ** error: invalid opcode [{}] **",
+          "\n    ** error: invalid opcode {} **",
           "ill-formed literal":
-          "    ** error: ill-formed literal [{}] - not an octal number **",
+          "    ** error: ill-formed literal {} (not an octal number) **",
           "ill-formed identifier too long":
-          "    ** error: ill-formed identifier [{}] - too long **",
+          "    ** error: ill-formed identifier {} (too long) **",
           "ill-formed identifier contains non-letter":
-          "    ** error: ill-formed identifier [{}] - contains non-letter character **",
+          "    ** error: ill-formed identifier {} (contains non-letter character) **",
           "ill-formed register":
-          "    ** error: invalid register [{}] - not R0-R7 **",
+          "    ** error: invalid register {} (not R0-R7) **",
           "ill-formed label too long":
-          "\n    ** error: ill-formed label [{}] - too long **",
+          "\n    ** error: ill-formed label {} (too long) **",
           "ill-formed label contains non-letter":
-          "\n    ** error: ill-formed label [{}] - contains non-letter character **",
+          "\n    ** error: ill-formed label {} (contains non-letter character) **",
           "too few operands":
-          "\n    ** error: too few operands - {} operands expected for {} **",
+          "\n    ** error: too few operands ({} operands expected for {}) **",
           "too many operands":
-          "\n    ** error: too many operands - {} operand expected for {} **",
+          "\n    ** error: too many operands ({} operand expected for {}) **",
           "missing comma":
           "\n    ** error: missing comma **",
           "misplaced comma":
           "\n    ** error: misplaced comma **"}
 
 # Possible warnings
-WARNINGS = {"branch to non-existent label":
-            "    ** warning: branch to non-existent label [{}] **",
+WARNINGS = {"branch to missing label":
+            "    ** warning: branch to missing label {} **",
             "label not branched to":
-            "\n    ** warning: label [{}] is never branched to **"}
+            "\n    ** warning: label {} is not branched to **"}
 
 #########################################################################################
 #                                 Module Functions                                      #
@@ -106,7 +105,9 @@ def find_labels(lines):
     for line_num in lines:
         first_token = lines[line_num].split()[0]
         if ':' in first_token:  # Label
-            # Add label to labels dictionary:
+            # Remove colon from label
+            first_token = first_token.replace(':', '')
+            # Add label to labels dictionary
             labels.update({line_num: first_token})
     return labels
 
@@ -165,8 +166,8 @@ class SyntaxChecker:
 
     def __evaluate_program(self, stripped):
         """Evaluate syntax for each line in MAL program."""
-        evaluated = {}
-        # Look for labels in program
+        evaluated = dict()
+        # Make a dictionary of labels in the mal program
         self.__labels.update({value: [key, 0] for (
             key, value) in find_labels(stripped).items()})
         # Check each line in program for valid syntax
@@ -204,29 +205,35 @@ class SyntaxChecker:
                 warning = "label not branched to"
                 self.__warning_count.update(
                     {warning: self.__warning_count[warning] + 1})
-                new_line = evaluated[self.__labels[label]
-                                     [0]] + WARNINGS[warning].format(label)
-                evaluated.update({self.__labels[label][0]: new_line})
+                if "error" not in self.__labels[label][0]:
+                    new_line = evaluated[self.__labels[label]
+                                        [0]] + WARNINGS[warning].format(label)
+                    evaluated.update({self.__labels[label][0]: new_line})
         return evaluated
 
     def __evaluate_instruction(self, instruction):
         """Evaluate if an instruction contains errors."""
         evaluated_line = instruction
-        opcode = instruction.split()[0].upper()
-        operands = instruction.replace(',', '').split()[1:]
+        tokens = tokenize(instruction)
+        opcode = tokens[0].upper()
+        operands = tokens[1:]
         error = None
+        trailing_comma = False
         # Check for valid number of operands
-        if len(operands) < len(MAL[opcode]):  # Too few operands
+        valid_length = len(intersperse(MAL[opcode], ','))
+        if len(operands) < valid_length:  # Too few operands
             error = "too few operands"
-        elif len(operands) > len(MAL[opcode]):  # Too many operands
-            error = "too many operands"
+        elif len(operands) > valid_length:  # Too many operands
+            if operands[-1] != ',':
+                error = "too many operands"
+            else:
+                trailing_comma = True
         if error:  # Invalid number of operands
-            if len(MAL[opcode]) == 1:
+            if valid_length == 1:
                 evaluated_line += (ERRORS[error].replace("operands", "operand", 2).replace(
                     "operand", "operands", 1)).format(len(MAL[opcode]), opcode)
             else:
-                evaluated_line += (ERRORS[error]
-                                   ).format(len(MAL[opcode]), opcode)
+                evaluated_line += (ERRORS[error]).format(len(MAL[opcode]), opcode)
             self.__error_count.update(
                 {error: self.__error_count[error] + 1})
         else:  # Valid number of operands
@@ -237,37 +244,43 @@ class SyntaxChecker:
                 for operand_error in operand_errors:
                     evaluated_line += '\n' + operand_error
                     break  # stop after the first error in the line
+        if trailing_comma and not error and not operand_errors:
+            evaluated_line += ERRORS["misplaced comma"]
         return evaluated_line
 
-    def __evaluate_operands(self, opcode, operands):
+    def __evaluate_operands(self, opcode, tokens):
         """Evaluate if an operand is valid"""
         operand_errors = []  # List to store operand errors
-        valid_operands = MAL[opcode]  # Valid operands for opcode
-        for index, valid_operand in enumerate(valid_operands):
-            operand = operands[index]
+        valid_tokens = intersperse(MAL[opcode], ',')  # Valid operands for opcode
+        for index, valid_token in enumerate(valid_tokens):
             error = None
             warning = None
-            if 'R' in valid_operand:  # Register
-                if operand.upper() not in REGISTERS:  # Not R0-R7
+            token = tokens[index]
+            if token == ',' and valid_token != ',':
+                error = "misplaced comma"
+            elif valid_token == ',' and token != ',':
+                error = "missing comma"
+            elif 'R' in valid_token:  # Register
+                if token.upper() not in REGISTERS:  # Not R0-R7
                     error = "ill-formed register"
-            elif 'V' in valid_operand:  # Literal value
-                if not is_octal_number(operand):
+            elif 'V' in valid_token:  # Literal value
+                if not is_octal_number(token):
                     error = "ill-formed literal"
-            elif 'S' in valid_operand or 'D' in valid_operand:  # Identifier
-                error = self.__evaluate_identifier(operand)
+            elif 'S' in valid_token or 'D' in valid_token:  # Identifier
+                error = self.__evaluate_identifier(token)
                 if error:
                     error = "ill-formed identifier" + error
-            elif 'LAB' in valid_operand:  # Label
-                error = self.__evaluate_identifier(operand)
+            elif 'LAB' in valid_token:  # Label
+                error = self.__evaluate_identifier(token)
                 if error:
                     error = "ill-formed label" + error
-                if operand.casefold() not in [label.casefold() for label in self.__labels]:
+                if token.casefold() not in [label.casefold() for label in self.__labels]:
                     # Referenced label is not in label reference dictionary
-                    warning = "branch to non-existent label"
+                    warning = "branch to missing label"
                 else:
                     # Increase reference count for label
                     for label_index, key in enumerate(self.__labels.keys()):
-                        if operand.casefold() == key.casefold():
+                        if token.casefold() == key.casefold():
                             keys = [key for key in self.__labels]
                             label_key = keys[label_index]
                             label_reference_list = self.__labels[label_key]
@@ -277,13 +290,13 @@ class SyntaxChecker:
             if error:
                 # Increment error count
                 operand_errors.append(
-                    (ERRORS[error]).format(operand))
+                    (ERRORS[error]).format(token))
                 self.__error_count.update(
                     {error: self.__error_count[error] + 1})
             if warning:
                 # Increment warning count
                 operand_errors.append(
-                    (WARNINGS[warning]).format(operand))
+                    (WARNINGS[warning]).format(token))
                 self.__warning_count.update(
                     {warning: self.__warning_count[warning] + 1})
         return operand_errors
@@ -373,9 +386,9 @@ class SyntaxReport:
                     footer_lines.append(
                         ("   {} {}\n").format(error_count, error))
             footer_lines.append(
-                "Processing complete - MAL program is not valid.")
+                "\nProcessing complete - MAL program is not valid.")
         else:
-            footer_lines.append("Processing complete - MAL program is valid.")
+            footer_lines.append("\nProcessing complete - MAL program is valid.")
         footer = str()
         for line in footer_lines:
             footer = footer + line

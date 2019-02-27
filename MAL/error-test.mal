@@ -14,11 +14,15 @@ LOADI    R0, 0       ; test : colon in in-line comment
 LOADI  R10,  0       ; invalid register
 LOADI r2, 18         ; ill-formed literal     
 
+loop: ADD r0, r9, r3 ; invalid register
+ADD r0 r9, r3        ; missing comma
+BR loop
+
 MainLoop:            ; ill-formed label - too long
 INC R1, 1            ; too many operands
 ADD r0, r1           ; too few operands
 BLT r1, r2, MainLoop ; ill-formed label - too long
-BR End
+BR End,              ; misplaced comma
 BR None              ; branch to non-existent label
 
 test1:               ; ill-formed label - contains number

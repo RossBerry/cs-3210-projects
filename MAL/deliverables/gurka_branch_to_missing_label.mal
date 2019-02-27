@@ -1,0 +1,10 @@
+
+;; warning: label missing for branch statement / Gurka
+
+LOADI  R1, 7
+
+LOADI  R2, 100
+
+BEQ  R1, R2, TEST   
+
+END

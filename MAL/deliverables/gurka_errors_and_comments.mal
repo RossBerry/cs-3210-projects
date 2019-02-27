@@ -1,0 +1,87 @@
+;; MAL Program #2 – Simple *for* Loop, documented
+;; 
+;; J. Gurka 
+
+;; Description:
+;;   This program illustrates a simple MAL program
+;; to be used for testing the MAL parser.  It adds
+;; the numbers from 1 to 10 using a *for* loop.
+;;   MAL program #3 is identical to MAL program #1,
+;; except that comments and blank lines have been added.  
+;; No errors have been introduced in the code.
+;;
+;; MAL instructions and features included, and to be
+;;   added (marked *)
+;;    1. blank lines
+;;       a) between comments, single
+;;       b) between comments, multiple
+;;       c) *between code lines, single
+;;       d) *between code lines, multiple
+;;       e) after END pseudo-op
+;;    2. comments
+;;       a) block comments
+;;       b) single line comments, with text
+;;       c) single line comments, without text
+;;       d) on-line comments
+;;    3. labels
+;;       a) with code
+;;       b) without code
+;;    4. instructions
+;;       a) *LOAD
+;;       b) LOADI
+;;       c) STORE
+;;       d) ADD
+;;       e) INC
+;;       f) *SUB
+;;       g) *DEC
+;;       h) *BEQ
+;;       i) *BLT
+;;       j) BGT
+;;    5. pseudo-ops
+;;       a) END
+;;       b) *NOOP
+;;    6. spaces
+;;       a) after commas
+;;       b) *none after commas
+;;       c) after  label colon
+;;       d) *none after label colon
+;;       e) *one after op code
+;;       f) multiple after op code
+
+
+;; Register Use
+;;   R0 – running total of values
+;;   R1 – loop counter / values to be summed
+;;   R2 – loop upper limit
+;;   R3 .. R7 - unused
+
+;; Variable
+;;   TOTAL – contains the sum of the values
+;;     one through ten
+
+;; Labels
+;;   TOP – first line of for loop, used for
+;;     branching back
+;;   CONT – line after end of for loop
+
+
+; initialize
+;
+          LOADI     R0, 0             ; running total
+          LOADI     R1, 1             ; *for* loop counter & 
+                                      ;    value to be summed
+          LOADI     R2, 12            ; loop limit, 12 octal = 10
+
+; for loop: top test, definite loop
+  TOP:    
+          BGT       R1, R2, CONT      ; value > 10 (limit)?
+          ADD       R0, R1, R0        ; total + value = total
+          INC       R1                ; value++
+          BR        TOP
+  CONT:   STORE     R0, TOTAL         ; save final sum
+
+; program complete      
+          END
+
+
+
