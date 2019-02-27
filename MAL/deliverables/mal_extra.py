@@ -219,6 +219,9 @@ class SyntaxChecker:
         # Check if any labels were not branched to
         evaluated = self.__evaluate_label_references(evaluated)
 
+        # Check if the last instruction is END
+        evaluated = self.__check_for_end(stripped, evaluated)
+
         return evaluated
 
     def __evaluate_instruction(self, instruction):
@@ -262,8 +265,8 @@ class SyntaxChecker:
                 for operand_error in operand_errors:
                     evaluated_line += '\n' + operand_error
 
-            # If there were operand warnings, but no errors, add to evaluated line
-            elif len(operand_warnings) > 0:
+            # If there were operand warnings, add them to evaluated line
+            if len(operand_warnings) > 0:
                 for operand_warning in operand_warnings:
                     evaluated_line += '\n' + operand_warning
 
@@ -288,13 +291,9 @@ class SyntaxChecker:
             if error:
                 operand_errors.append((ERRORS[error]).format(operand))
                 self.__increment_count(self.__error_count, error)
-                # Only increment and include first error in the instruction
-                break
             elif warning:
                 operand_warnings.append((WARNINGS[warning]).format(operand))
                 self.__increment_count(self.__warning_count, warning)
-                # Only increment and include first warning in the instruction
-                break
         return operand_errors, operand_warnings
 
     def __evaluate_operand(self, valid_operand, operand):
@@ -365,8 +364,7 @@ class SyntaxChecker:
             # Add warning to evaluated line if the label is not branched to and
             # if the evaluated line does not already contain an error
             label_reference_count = self.__labels[label][1]
-            if label_reference_count == 0 \
-                and "error" not in evaluated_lines[self.__labels[label][0]]:
+            if label_reference_count == 0:
                 warning = "label not branched to"
                 new_line = evaluated_lines[self.__labels[label]
                                            [0]] + WARNINGS[warning].format(label)
@@ -375,6 +373,22 @@ class SyntaxChecker:
 
         return evaluated_lines
 
+
+    def __check_for_end(self, stripped, evaluated):
+        """
+        Checks if the last instruction is END.  Adds error if not.
+            Input:
+            Output:
+        """
+        last_line = 0
+        for line_num in stripped:
+            if int(line_num) > last_line:
+                last_line = int(line_num)
+        if "end".casefold() not in stripped[str(last_line)]:
+            error = "last instruction not END"
+            evaluated_line = evaluated[str(last_line)] + ERRORS[error]
+            evaluated.update({str(last_line): evaluated_line})
+        return evaluated
 
     def __increment_count(self, count_dict, key):
         """

@@ -39,13 +39,15 @@ ERRORS = {"invalid opcode":
           "ill-formed register":
           "    ** error: invalid register {} (not R0-R7) **",
           "ill-formed label (too long)":
-          "    ** error: ill-formed label {} (too long) **",
+          "\n    ** error: ill-formed label {} (too long) **",
           "ill-formed label (contains non-letter)":
-          "    ** error: ill-formed label {} (contains non-letter character) **",
+          "\n    ** error: ill-formed label {} (contains non-letter character) **",
           "too few operands":
           "\n    ** error: too few operands ({} operands expected for {}) **",
           "too many operands":
-          "\n    ** error: too many operands ({} operand expected for {}) **"}
+          "\n    ** error: too many operands ({} operand expected for {}) **",
+          "last instruction not END":
+          "\n    ** error: last instruction not END **"}
 
 # Warning messages
 WARNINGS = {"branch to missing label":
@@ -192,7 +194,7 @@ class SyntaxChecker:
                 error = self.__evaluate_identifier(label)
                 if error:
                     error = "ill-formed label" + error
-                    error_line = stripped[line] + '\n' + ERRORS[error].format(label)
+                    error_line = stripped[line] + ERRORS[error].format(label)
                     evaluated.update({line: error_line})
 
                 # Check if there is an instruction on same line as label
@@ -262,8 +264,8 @@ class SyntaxChecker:
                 for operand_error in operand_errors:
                     evaluated_line += '\n' + operand_error
 
-            # If there were operand warnings, but no errors, add to evaluated line
-            elif len(operand_warnings) > 0:
+            # If there were operand warnings, add them to evaluated line
+            if len(operand_warnings) > 0:
                 for operand_warning in operand_warnings:
                     evaluated_line += '\n' + operand_warning
 
@@ -288,13 +290,9 @@ class SyntaxChecker:
             if error:
                 operand_errors.append((ERRORS[error]).format(operand))
                 self.__increment_count(self.__error_count, error)
-                # Only increment and include first error in the instruction
-                break
             elif warning:
                 operand_warnings.append((WARNINGS[warning]).format(operand))
                 self.__increment_count(self.__warning_count, warning)
-                # Only increment and include first warning in the instruction
-                break
         return operand_errors, operand_warnings
 
     def __evaluate_operand(self, valid_operand, operand):
@@ -365,8 +363,7 @@ class SyntaxChecker:
             # Add warning to evaluated line if the label is not branched to and
             # if the evaluated line does not already contain an error
             label_reference_count = self.__labels[label][1]
-            if label_reference_count == 0 \
-                and "error" not in evaluated_lines[self.__labels[label][0]]:
+            if label_reference_count == 0:
                 warning = "label not branched to"
                 new_line = evaluated_lines[self.__labels[label]
                                            [0]] + WARNINGS[warning].format(label)
@@ -374,7 +371,6 @@ class SyntaxChecker:
                 self.__increment_count(self.__warning_count, warning)
 
         return evaluated_lines
-
 
     def __increment_count(self, count_dict, key):
         """
