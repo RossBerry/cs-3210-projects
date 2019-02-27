@@ -8,7 +8,9 @@ import datetime
 
 """
 TODO:
- - Add support for instructions on same line as labels
+ - Misplaced commas
+ - duplicate labels
+ - no warnings after errors
 """
 
 #########################################################################################
@@ -51,7 +53,11 @@ ERRORS = {"invalid opcode":
           "too few operands":
           "\n    ** error: too few operands - {} operands expected for {} **",
           "too many operands":
-          "\n    ** error: too many operands - {} operand expected for {} **"}
+          "\n    ** error: too many operands - {} operand expected for {} **",
+          "missing comma":
+          "\n    ** error: missing comma **",
+          "misplaced comma":
+          "\n    ** error: misplaced comma **"}
 
 # Possible warnings
 WARNINGS = {"branch to non-existent label":
@@ -62,6 +68,33 @@ WARNINGS = {"branch to non-existent label":
 #########################################################################################
 #                                 Module Functions                                      #
 #########################################################################################
+
+def tokenize(instruction):
+    instruction = instruction.strip()
+    tokens = list()
+    token = str()
+    for index, char in enumerate(instruction):
+        if not char.isspace():
+            if not char == ',':
+                token += char
+            else:
+                tokens.append(token)
+                token = ','
+                tokens.append(token)
+                token = str()
+        elif len(token) > 0:
+            tokens.append(token)
+            token = str()
+        if index == len(instruction) - 1 and len(token) > 0:
+            tokens.append(token)
+    return tokens
+
+
+def intersperse(lst, item):
+    """Intersperse an item in between existing items in a list"""
+    result = [item] * (len(lst) * 2 - 1)
+    result[0::2] = lst
+    return result
 
 
 def find_labels(lines):
@@ -104,17 +137,18 @@ def open_file(mal_file):
 
 def strip_mal_program(original):
     """Strip blank lines and comments from program."""
-    stripped = {}
+    stripped_lines = {}
     for line in original:
-        line_text = original[line].replace('\t', '') # Remove tab characters
-        if ";" in line_text:  # Line contains a comment
-            index = line_text.find(';')
+        stripped_line = original[line].replace('\t', '') # Remove tab characters
+        stripped_line = stripped_line.strip() # Remove spaces from beginning and end
+        if ";" in stripped_line:  # Line contains a comment
+            index = stripped_line.find(';')
             if index != 0:  # In-line comment
                 # Remove comment from line
-                stripped.update({line: line_text[:index - 1]})
-        elif original[line] != '':  # Line not blank and has no comments
-            stripped.update({line: line_text})
-    return stripped
+                stripped_lines.update({line: stripped_line[:index - 1]})
+        elif stripped_line != '':  # Line not blank and has no comments
+            stripped_lines.update({line: stripped_line})
+    return stripped_lines
 
 #########################################################################################
 #                                   Module Classes                                      #
