@@ -12,10 +12,7 @@
     (cond
         (
             (equal (mod n 3) 0) 
-            T
-        )
-        (
-            NIL
+                T
         )
     )
 )
@@ -25,15 +22,15 @@
     (cond
         (
             (null lst) 
-            0
+                0
         )
         (
             (listp (car lst))
-            (+ (divide-by-3 (car lst)) (divide-by-3 (cdr lst)))
+                (+ (divide-by-3 (car lst)) (divide-by-3 (cdr lst)))
         )
         (
             (divisible-by-3 (car lst))
-            (+ 1 (divide-by-3 (cdr lst)))
+                (+ 1 (divide-by-3 (cdr lst)))
         )
         (
             t (divide-by-3 (cdr lst))
