@@ -37,3 +37,4 @@
 
 (print (convert '(50 'C))) ; 122
 (print (convert '(50 'F))) ; 10
+(print (convert '(32 'C))) ; 
