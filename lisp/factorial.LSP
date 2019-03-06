@@ -20,7 +20,11 @@
 ;;  low number                  5           120
 ;;  high number                 12          479001600 
 
+(defvar test_n_1 0)
+(defvar test_n_2 5)
+(defvar test_n_3 12)
 
-;(print (factorial 0))
-;(print (factorial 5))
-;(print (factorial 12))
+;; factorial tests:
+(print (factorial test_n_1))
+(print (factorial test_n_2))
+(print (factorial test_n_3))

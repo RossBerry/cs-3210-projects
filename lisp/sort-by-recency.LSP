@@ -1,30 +1,23 @@
 ;;  Kenneth Berry – CS 3210 – Spring 2019
-;;  ============================
-;;  ____ function: receives a number and returns
-;;  its factorial.
+;;  ======================================================
+;;  make-recent function: receives a word and list of words,
+;;  not nested, and without duplicates.  If the word exists
+;;  in the list of words, the word is moved to the front, and
+;;  if the word does not exist in the list, it is added to the
+;;  front of the list.
+;;
 ;;  parameters:
-;;       n - a positive integer
+;;        str - a string
+;;        lst - a list of strings
 ;;  assumptions:
-;;       1. n is an integer
-;;       2. n is positive
+;;       1. the list has no duplicates
+;;       2. no nested lists
+;;       3. list order is unknown
 
-(defun my-remove (str lst)
-    (cond
-        (
-            (null lst)
-                lst
-        )
-        (
-            (equal (car lst) str)
-                (my-remove str (cdr lst))
-        )
-        (
-            (append (list (car lst)) (my-remove str (cdr lst)))
-        )
-    )
-)
+(defun make-recent (str lst)
+    (append (list str) (my-remove str lst)))
 
-;;  test plan for ____:
+;;  test plan for make-recent:
 ;;  category / description     data                    expected result
 ;;  ------------------------------------------------------------------
 ;;  empty list                  ()                        0
@@ -37,20 +30,25 @@
 ;;  negative and positive       (-9 10 12)                2
 
 
-;;  ============================
-;;  ____ function: receives a number and returns
-;;  its factorial.
+;;  =====================================================
+;;  my-remove function: receives a word and list of words,
+;;  and returns the list with all occurances of the word
+;;  removed.
+;;
 ;;  parameters:
-;;       n - a positive integer
+;;       str - a string
+;;       lst - a list of strings
 ;;  assumptions:
-;;       1. n is an integer
-;;       2. n is positive
+;;       1. list order is unknown
 
-(defun make-recent (str lst)
-    (append (list str) (my-remove str lst))
-)
+(defun my-remove (str lst)
+    (cond
+        ((null lst) lst)
+        ((equal (car lst) str)
+            (my-remove str (cdr lst)))
+        ((append (list (car lst)) (my-remove str (cdr lst))))))
 
-;;  test plan for ____:
+;;  test plan for my-remove:
 ;;  category / description     data                    expected result
 ;;  ------------------------------------------------------------------
 ;;  empty list                  ()                        0

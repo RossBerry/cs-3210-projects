@@ -1,12 +1,15 @@
 ;;  Kenneth Berry – CS 3210 – Spring 2019
 ;;  ============================
-;;  ____ function: receives a number and returns
-;;  its factorial.
+;;  search-count function: receives an integer and a list, and
+;;  returns the count of how many times that integer occurs in
+;;  the list.
+;;
 ;;  parameters:
-;;       n - a positive integer
+;;       n - an integer
+;;     lst - a list of integers
 ;;  assumptions:
-;;       1. n is an integer
-;;       2. n is positive
+;;       1. no nested lists
+;;       2. list order is unknown
 
 (defun search-count (n lst)
     (cond
@@ -17,7 +20,7 @@
     )
 )
 
-;;  test plan for ____:
+;;  test plan for search-count:
 ;;  category / description     data                    expected result
 ;;  ------------------------------------------------------------------
 ;;  empty list                  ()                        0

@@ -71,7 +71,7 @@
 (defvar test_n_8 -9.0)
 (defvar test_n_9 18.0)
 
-(print "divide-by-3 Tests:")
+;; divide-by-3 tests:
 (print (divide-by-3 test_lst_1))
 (print (divide-by-3 test_lst_2))
 (print (divide-by-3 test_lst_3))
@@ -80,7 +80,7 @@
 (print (divide-by-3 test_lst_6))
 (print (divide-by-3 test_lst_7))
 (print (divide-by-3 test_lst_8))
-
+;; divisible-by-3 tests:
 (print "divisible-by-3 Tests:")
 (print (divisible-by-3 test_n_1))
 (print (divisible-by-3 test_n_2))

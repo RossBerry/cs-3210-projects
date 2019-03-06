@@ -1,7 +1,9 @@
 ;;  Kenneth Berry – CS 3210 – Spring 2019
 ;;  ============================
-;;  has-duplicates function: reports whether a list has
-;;  duplicates (true) or not (false)
+;;  has-duplicates function: receives a list of integers, 
+;;  not nested, and returns true if the list contains
+;;  duplicates.
+;;
 ;;  parameters:
 ;;       lst – a list of integers
 ;;  assumptions:
@@ -27,21 +29,22 @@
 
 
 ;;  ============================
-;;  ____ function: receives a number and returns
-;;  its factorial.
+;;  sum-counts function: receives a list of integers,
+;;  not nested, and returns the sum of the counts for 
+;;  each number.
+;;  
 ;;  parameters:
-;;       n - a positive integer
+;;       lst - a list of integers
 ;;  assumptions:
-;;       1. n is an integer
-;;       2. n is positive
+;;       1. no nested lists
+;;       2. list order is unknown
 
 (defun sum-counts (lst)
     (cond
-        ((null lst)
-            0)
+        ((null lst) 0)
         (t (+ (search-count (car lst) lst) (sum-counts (cdr lst))))))
 
-;;  test plan for ____:
+;;  test plan for sum-counts:
 ;;  category / description     data                    expected result
 ;;  ------------------------------------------------------------------
 ;;  empty list                  ()                        0
@@ -54,13 +57,16 @@
 ;;  negative and positive       (-9 10 12)                2
 
 ;;  ============================
-;;  ____ function: receives a number and returns
-;;  its factorial.
+;;  search-count function: receives an integer and a list, and
+;;  returns the count of how many times that integer occurs in
+;;  the list.
+;;
 ;;  parameters:
-;;       n - a positive integer
+;;       n - an integer
+;;     lst - a list of integers
 ;;  assumptions:
-;;       1. n is an integer
-;;       2. n is positive
+;;       1. no nested lists
+;;       2. list order is unknown
 
 (defun search-count (n lst)
     (cond
@@ -70,7 +76,7 @@
             (+ 1 (search-count n (cdr lst))))
         (t (search-count n (cdr lst)))))
 
-;;  test plan for ____:
+;;  test plan for search-count:
 ;;  category / description     data                    expected result
 ;;  ------------------------------------------------------------------
 ;;  empty list                  ()                        0

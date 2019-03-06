@@ -1,32 +1,41 @@
 ;;  Kenneth Berry – CS 3210 – Spring 2019
 ;;  ============================
-;;  ____ function: receives a number and returns
-;;  its factorial.
+;;  remove-negatives function: receives a list of integers,
+;;  not nested, and returns a list with all negative values
+;;  removed.
+;;
 ;;  parameters:
-;;       n - a positive integer
+;;       lst - a list of integers
 ;;  assumptions:
-;;       1. n is an integer
-;;       2. n is positive
+;;       1. numbers will be integers
+;;       2. numbers can be positive or negative
 
 (defun remove-negatives (lst)
     (cond
         ((null lst) lst)
-        ((< (car lst) 0) (remove-negatives (cdr lst)))
-        ((append (list (car lst)) (remove-negatives (cdr lst))))
-    )
-)
+        ((< (car lst) 0)
+            (remove-negatives (cdr lst)))
+        ((append (list (car lst))
+            (remove-negatives (cdr lst))))))
 
-;;  test plan for ____:
+;;  test plan for remove-negatives:
 ;;  category / description     data                    expected result
 ;;  ------------------------------------------------------------------
-;;  empty list                  ()                        0
-;;  singleton, not divisible    (5)                       0
-;;  singleton, one divisible    (6)                       1
-;;  single nested list          ((6))                     1
-;;  multiple divisible          (3 1 6 2)                 2
-;;  multiple nested             ((9) 12 7 (3 (24) 18))    5
-;;  integers and floats         (9 10 12.0 1.9)           2
-;;  negative and positive       (-9 10 12)                2
+;;  empty list                  ()                        ()
+;;  singleton, not negative     (5)                       (5)
+;;  singleton, one negative     (-6)                      ()
+;;  multiple negatives          (-6 -3 -2)                ()
+;;  positive and negatives      (5 -6 0 -2)               (5 0)
 
-(defvar test '(1 -2 3 2 -3 3 3))
-(write (remove-negatives test))
+(defvar test_lst_1 '())
+(defvar test_lst_2 '(5))
+(defvar test_lst_3 '(-6))
+(defvar test_lst_4 '(-6 -3 -2))
+(defvar test_lst_5 '(5 -6 0 -2))
+
+;; remove-negatives tests:
+(print (remove-negatives test_lst_1))
+(print (remove-negatives test_lst_2))
+(print (remove-negatives test_lst_3))
+(print (remove-negatives test_lst_4))
+(print (remove-negatives test_lst_5))

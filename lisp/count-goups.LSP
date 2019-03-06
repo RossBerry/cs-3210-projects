@@ -40,6 +40,7 @@
 (defvar test_lst_7 '(5 5 5 5 5))
 (defvar test_lst_8 '(-9 -9 12.0 12.0))
 
+;; count-groups tests:
 (print (count-groups test_lst_1))
 (print (count-groups test_lst_2))
 (print (count-groups test_lst_3))

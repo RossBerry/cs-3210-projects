@@ -1,28 +1,19 @@
 ;;  Kenneth Berry – CS 3210 – Spring 2019
 ;;  ============================
-;;  ____ function: receives a number and returns
-;;  its factorial.
+;;  twin function: receives a list, not nested, and
+;;  and returns a list with each element doubled.
+;;
 ;;  parameters:
-;;       n - a positive integer
+;;       lst - a list
 ;;  assumptions:
-;;       1. n is an integer
-;;       2. n is positive
-
-; Receives a list, not nested, and doubles all elements.
+;;       1. list not nested
 
 (defun twin (lst)
     (cond
-        (
-            (null lst)
-                lst
-        )
-        (
-            t (append (append (list (car lst)) (list (car lst))) (twin (cdr lst)))
-        )
-    )
-)
+        ((null lst) lst)
+        (t (append (append (list (car lst)) (list (car lst))) (twin (cdr lst))))))
 
-;;  test plan for ____:
+;;  test plan for twin:
 ;;  category / description     data                    expected result
 ;;  ------------------------------------------------------------------
 ;;  empty list                  ()                        0
