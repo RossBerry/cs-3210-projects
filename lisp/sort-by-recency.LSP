@@ -1,5 +1,5 @@
 ;;  Kenneth Berry – CS 3210 – Spring 2019
-;;  ======================================================
+;;  =====================================
 ;;  make-recent function: receives a word and list of words,
 ;;  not nested, and without duplicates.  If the word exists
 ;;  in the list of words, the word is moved to the front, and
@@ -18,19 +18,26 @@
     (append (list str) (my-remove str lst)))
 
 ;;  test plan for make-recent:
-;;  category / description     data                    expected result
-;;  ------------------------------------------------------------------
-;;  empty list                  ()                        0
-;;  singleton, not divisible    (5)                       0
-;;  singleton, one divisible    (6)                       1
-;;  single nested list          ((6))                     1
-;;  multiple divisible          (3 1 6 2)                 2
-;;  multiple nested             ((9) 12 7 (3 (24) 18))    5
-;;  integers and floats         (9 10 12.0 1.9)           2
-;;  negative and positive       (-9 10 12)                2
+;;  category / description    data                         expected result
+;;  ----------------------------------------------------------------------
+;;  empty list                str=cat lst=()               (cat)
+;;  singleton, is str         str=cat lst=(cat)            (cat)
+;;  singleton, not str        str=cat lst=(dog)            (cat dog)
+;;  multiple words, with str  str=dog lst=(fish dog bird)  (dog fish bird)
+;;  multiple words, no str    str=dog lst=(cat fish bird)  (dog cat fish bird)
+
+;;  test variables for make-recent:
+(defvar test_lst_1 '())
+(defvar test_lst_2 '("cat"))
+(defvar test_lst_3 '("dog"))
+(defvar test_lst_4 '("fish" "dog" "bird"))
+(defvar test_lst_5 '("cat" "fish" "bird"))
+(defvar test_str_1 "cat")
+(defvar test_str_2 "dog")
 
 
-;;  =====================================================
+;;  Kenneth Berry – CS 3210 – Spring 2019
+;;  =====================================
 ;;  my-remove function: receives a word and list of words,
 ;;  and returns the list with all occurances of the word
 ;;  removed.
@@ -43,26 +50,41 @@
 
 (defun my-remove (str lst)
     (cond
-        ((null lst) lst)
+        ((null lst)
+            NIL)
         ((equal (car lst) str)
             (my-remove str (cdr lst)))
         ((append (list (car lst)) (my-remove str (cdr lst))))))
 
 ;;  test plan for my-remove:
-;;  category / description     data                    expected result
-;;  ------------------------------------------------------------------
-;;  empty list                  ()                        0
-;;  singleton, not divisible    (5)                       0
-;;  singleton, one divisible    (6)                       1
-;;  single nested list          ((6))                     1
-;;  multiple divisible          (3 1 6 2)                 2
-;;  multiple nested             ((9) 12 7 (3 (24) 18))    5
-;;  integers and floats         (9 10 12.0 1.9)           2
-;;  negative and positive       (-9 10 12)                2
+;;  category / description    data                         expected result
+;;  ----------------------------------------------------------------------
+;;  empty list                str=cat lst=()               NIL
+;;  singleton, is str         str=cat lst=(cat)            NIL
+;;  singleton, not str        str=cat lst=(dog)            (dog)
+;;  multiple words, with str  str=dog lst=(fish dog bird)  (fish bird)
+;;  multiple words, no str    str=dog lst=(cat fish bird)  (cat fish bird)
 
-;(defvar test_lst '("bee" "cat" "dog" "eagle" "fish"))
+;;  test variables for my-remove:
+;;  test_lst_1
+;;  test_lst_2
+;;  test_lst_3
+;;  test_lst_1
+;;  test_lst_1
+;;  test_str_1
+;;  test_str_2
 
-;(print (my-remove "cat" '("bee" "cat" "dog" "eagle" "fish")))
 
-(print (make-recent "cat" '("rabbit" "cat" "dog" "bird" "fish")))
-(print (make-recent "bird" '("rabbit" "cat" "dog" "fish")))
+;;  tests for make-recent:
+;; (print (make-recent test_str_1 test_lst_1))
+;; (print (make-recent test_str_1 test_lst_2))
+;; (print (make-recent test_str_1 test_lst_3))
+;; (print (make-recent test_str_2 test_lst_4))
+;; (print (make-recent test_str_2 test_lst_5))
+
+;;  tests for my-remove:
+;; (print (my-remove test_str_1 test_lst_1))
+;; (print (my-remove test_str_1 test_lst_2))
+;; (print (my-remove test_str_1 test_lst_3))
+;; (print (my-remove test_str_2 test_lst_4))
+;; (print (my-remove test_str_2 test_lst_5))
