@@ -1,0 +1,31 @@
+%!PS
+/SmileyFace
+{0 setgray
+0.2 setlinewidth 
+% head
+4 5 3 0 360 arc closepath
+stroke
+% mouth
+4 5 2 210 330 arc closepath
+gsave
+% this is red:
+1 0 0 setrgbcolor fill
+grestore
+stroke
+% eyes
+3 6 0.8 0 360 arc closepath
+gsave
+% this is blue:
+0 0 1 setrgbcolor fill
+grestore
+stroke
+5 6 0.8 0 360 arc closepath
+gsave
+% this is blue:
+0 0 1 setrgbcolor fill
+grestore
+
+} def % end SmileyFace
+
+300 300  moveto SmileyFace
+showpage
