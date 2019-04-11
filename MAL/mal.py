@@ -354,7 +354,7 @@ class SyntaxChecker:
     def __evaluate_label_references(self, evaluated_lines):
         """
         Checks if there are labels that are not branched to by checking the 
-        number of times they were referenced throughout the program.None
+        number of times they were referenced throughout the program.
             Input: str(label)
             Output: str(error) or None
         """
