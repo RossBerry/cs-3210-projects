@@ -1,12 +1,19 @@
-function my_factorial(n)
-    n = BigInt(n)
+import Base.factorial
+
+function factorial(n::BigInt)
     if n == 0
         return 1
     else
-        return n * my_factorial(n - 1)
+        return n * factorial(n - 1)
     end
 end
 
-for i = 1:50
-    println(my_factorial(i))
+for n in 0:50
+    if n < 21
+        # Use Base.factorial(n::Int)
+        println(factorial(n))
+    else
+        # Use factorial(n::BigInt)
+        println(factorial(BigInt(n)))
+    end
 end
