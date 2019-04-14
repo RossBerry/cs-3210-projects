@@ -1,23 +1,31 @@
+
+
 struct MyNum
     value::Int128
 end
+
 
 f(x, y) = x^y
 g(x) = x^x
 f(x::MyNum, y::MyNum) = x.value^y.value
 g(j::MyNum) = j.value^j.value
-#+(x::MyNum, y::MyNum) = x.value + y.value
 
+println()
 w = Int128(2)
+@show w
 x = 2
+@show x
 y = MyNum(2)
+@show y.value
 z = MyNum(10)
-
-a = f(w, x)
-b = g(f(w, x))
-c = f(y, y)
-d = g(f(y, y))
-e = g(z)
+@show z.value
+println()
+@show f(w, x)
+@show g(f(w, x))
+@show eval(Meta.parse("f(y, z) |> g"))
+@show f(y, y)
+@show g(f(y, y))
+@show g(z)
 
 # println("a = ", a)
 # println("b = ", b)
