@@ -1,23 +1,32 @@
-mutable struct Point
+struct ImmutablePoint
     x::Int64; y::Int64;
 end
 
-function step!(P, x, y)
-    P.x += x
-    P.y += y
+mutable struct MutablePoint
+    x::Int64; y::Int64;
+end
+
+function step!(point::MutablePoint, step_x::Int64, step_y::Int64)
+    point.x = point.x + step_x
+    point.y = point.y + step_y
     return Nothing
 end
 
 function distance(P, Q)
-    return Int(sqrt((Q.x-P.x)^2 / (Q.y-P.y)^2))
+    if P.x == 0 && P.y == 0
+        return Int(round(sqrt(Q.x + Q.y)))
+    else
+        return Int(round(sqrt((Q.x-P.x)^2 / (Q.y-P.y)^2)))
+    end
 end
 
 function main()
-    origin = Point(0, 0)
-    p1 = Point(1, 1)
+    origin = ImmutablePoint(0, 0)
+    point1 = MutablePoint(0, 0)
     for n in 1:50
-        step!(p1, 1, 1)
-        @distance(origin, p1))
+        step!(point1, 1, 1)
+        @show point1
+        println(distance(origin, point1))
     end
 end
 
