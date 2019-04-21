@@ -1,31 +1,178 @@
 %!PS
-/SmileyFace
-{0 setgray
-0.2 setlinewidth 
-% head
-4 5 3 0 360 arc closepath
-stroke
-% mouth
-4 5 2 210 330 arc closepath
+
+
+
+% resize page so that units are in centimeters
+% bottom-left = (0,0) and top-right = (21, 24)
+matrix currentmatrix /originmat exch def 
+/umatrix {originmat matrix concatmatrix setmatrix} def 
+[28.3465 0 0 28.3465 10.5 100.0] umatrix
+
+/HeadOutline
+{
+    0 0 4 0 360 arc
+    stroke
+} def
+
+/CircleEye
+{
+    0 0 0.6 0 360 arc
+    fill
+} def
+
+/EllipseEye
+{ 
+    1 2 scale
+    CircleEye
+    fill
+    1 0.5 scale
+} def
+
+/TeethBackground
+{
+    2 0 rlineto
+    0 -1 rlineto
+    -2 0 rlineto
+    closepath
+    fill
+} def
+
+/TeethOutline
+{
+    0 -1 rlineto
+    1 0 rlineto
+    0 1 rlineto
+    0 -1 rlineto
+    1 0 rlineto
+    0 1 rlineto
+    stroke
+} def
+
+%-------- Smiley Face 1 -------%
+0 setgray
+0.3 setlinewidth
+
+% Background
 gsave
-% this is red:
-1 0 0 setrgbcolor fill
-grestore
-stroke
-% eyes
-3 6 0.8 0 360 arc closepath
-gsave
-% this is blue:
-0 0 1 setrgbcolor fill
-grestore
-stroke
-5 6 0.8 0 360 arc closepath
-gsave
-% this is blue:
-0 0 1 setrgbcolor fill
+10.5 18 translate
+1 1 0 setrgbcolor
+0 0 4 0 360 arc closepath fill
 grestore
 
-} def % end SmileyFace
+% Outline
+gsave
+10.5 18 translate
+HeadOutline
+grestore
 
-300 300  moveto SmileyFace
+% Left eye
+gsave
+9 19 translate
+EllipseEye
+
+% Right eye
+3 0 translate
+EllipseEye
+grestore
+
+% Mouth
+gsave
+10.5 17.5 translate
+0 0 2.5 190 350 arc stroke
+grestore
+
+
+%-------- Smiley Face 2 -------%
+
+% Background
+gsave
+5.5 9 translate
+1 0.75 0 setrgbcolor
+0 0 4 0 360 arc closepath fill
+grestore
+
+% Outline
+gsave
+5.5 9 translate
+0.2 setlinewidth
+HeadOutline
+grestore
+
+% Eyes
+% Left eye
+gsave
+4 10.5 translate
+0 0 0.5 0 360 arc fill
+
+% Right eye
+3 0 translate
+0 0 0.5 0 360 arc fill
+grestore
+
+% Mouth
+gsave
+5.5 8.75 translate
+1 0 0 setrgbcolor
+0 0 2.5 190 350 arc closepath fill
+0 0 0 setrgbcolor
+0 0 2.5 190 350 arc closepath stroke
+grestore
+
+% Teeth
+gsave
+1 1 1 setrgbcolor
+4.5 8.15 moveto TeethBackground
+0.1 setlinewidth
+0 0 0 setrgbcolor
+4.5 8.15 moveto TeethOutline
+grestore
+
+
+%-------- Smiley Face 3 -------%
+0.2 setlinewidth
+
+% Background
+gsave
+15.5 9 translate
+1 1 0 setrgbcolor
+0 0 4 0 360 arc closepath fill
+grestore
+
+% Outline
+gsave
+15.5 9 translate
+HeadOutline
+grestore
+
+% Eyes
+% Left Eye
+gsave
+13.5 10 translate
+1 1 1 setrgbcolor
+0 0 1.25 340 200 arc closepath fill
+0 0 0 setrgbcolor
+0 0 1.25 340 200 arc closepath stroke
+0.5 0.5 translate
+0 0 0.5 0 360 arc closepath fill
+-0.5 -0.5 translate
+
+% Right eye
+3.5 0 translate
+1 1 1 setrgbcolor
+0 0 1.25 340 200 arc closepath fill
+0 0 0 setrgbcolor
+0 0 1.25 340 200 arc closepath stroke
+0.5 0.5 translate
+0 0 0.5 0 360 arc closepath fill
+grestore
+
+% Mouth
+gsave
+15.5 9 translate
+1 0 0 setrgbcolor
+0 0 3 190 350 arc closepath fill
+0 0 0 setrgbcolor
+0 0 3 190 350 arc closepath stroke
+grestore
+
 showpage

@@ -1,0 +1,63 @@
+%!PS
+
+% resize page so that units are in centimeters
+% bottom-left = (0,0) and top-right = (21, 24)
+matrix currentmatrix /originmat exch def 
+/umatrix {originmat matrix concatmatrix setmatrix} def 
+[28.3465 0 0 28.3465 10.5 100.0] umatrix
+
+/Circle
+{
+    0 0 8 0 360 arc
+    closepath
+    fill
+} def
+
+/Outline
+{
+    gsave
+    0 5.5 rlineto
+    8.5 0 rlineto
+    0 -5.5 rlineto
+    closepath
+    stroke
+} def
+
+/CoverUp
+{
+    gsave
+    1 1 1 setrgbcolor
+    6.25 0 rlineto
+    0 14.75 rlineto
+    8.5 0 rlineto
+    0 -5.5 rlineto
+    -8.5 0 rlineto
+    0 -9.25 rlineto
+    14.75 0 rlineto
+    0 24 rlineto
+    -21 0 rlineto
+    closepath
+    fill
+    grestore
+} def
+
+
+0 setgray
+0.1 setlinewidth
+
+gsave
+10.5 12 translate
+40 {
+    1 1 1 setrgbcolor
+    Circle
+    0.95 0.95 scale
+    0 0 0 setrgbcolor
+    Circle
+    0.95 0.95 scale
+} repeat
+grestore
+
+0 0 moveto CoverUp
+6.25 9.25 moveto Outline
+
+showpage
