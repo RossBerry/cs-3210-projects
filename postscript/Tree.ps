@@ -1,0 +1,41 @@
+%PS
+
+/Helvetica findfont 8 scalefont setfont
+/dah {dup} def
+/dey {dup} def
+/inch {72 mul} def
+/num {1} def
+/incnum {/num num 1 add def} def
+/prt-n {7 string cvs show} def
+/ang1 {-1} def
+/ang2 {-2 ang1 mul} def
+/incang1 {/ang1 ang1 -1 add def} def
+/linelen {.5 inch} def
+/rot1 {/rang1 rang1 -1 mul def} def
+/depth 0 def
+/maxdepth 8 def
+/down {/depth depth 1 add def} def
+/up {/depth depth 1 sub def} def
+
+/DoLine 
+{ rang1 rang2 add rotate
+  0 linelen rlineto 
+  currentpoint stroke 
+  translate 0 0 moveto 
+} def
+
+/Tree
+{ gsave 
+  .62 .62 scale
+  2 setlinewidth
+  down rot1 DoLine
+  depth maxdepth le
+  { ang1 rotate Tree
+    ang2 rotate Tree
+  } if
+  up
+  grestore 
+} def
+
+num prt-n incnum
+4.25 inch 5.5 inch moveto Tree

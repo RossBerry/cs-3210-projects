@@ -1,0 +1,13 @@
+%!PS-Adobe-3.0 EPSF-3.0
+%%Title: von Koch triangular island
+%%...
+/s 100 def
+gsave .5 s mul dup neg exch translate 3 vonKochfractal pop
+grestore
+gsave .5 s mul dup translate
+-120 rotate 3 vonKochfractal pop grestore
+gsave 0 -.366 s mul translate
+-240 rotate 3 vonKochfractal pop grestore
+.001 setlinewidth 0 21 57.8 0 360 arc stroke
+showpage
+%%EOF

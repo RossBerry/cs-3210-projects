@@ -1,0 +1,26 @@
+%!PS-Adobe-2.0 EPSF-2.0
+%%Title: Triangolo di Sierpinski - by Emanuele Paolini
+%%BoundingBox: 0 0 540 480
+%%Pages: 1
+%%EndComments
+%%EndProlog
+
+%%Page: 1 1
+/sierpy {
+dup 1 ge {
+1 sub gsave
+1 2 div dup scale dup sierpy
+1 0 translate dup sierpy
+-0.5 3 sqrt 2 div translate dup sierpy
+grestore} {newpath 0 0 moveto 1 0 lineto 0.5 3 sqrt 2 div 
+lineto closepath fill}
+ifelse pop
+} def
+
+20 20 translate
+500 500 scale
+0 setlinewidth
+8 sierpy
+showpage
+
+%%Trailer

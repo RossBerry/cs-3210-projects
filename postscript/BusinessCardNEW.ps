@@ -1,10 +1,60 @@
-%PS
+%!PS
 
-% resize page so that units are in centimeters
-% bottom-left = (0,0) and top-right = (21, 24)
-matrix currentmatrix /originmat exch def 
-/umatrix {originmat matrix concatmatrix setmatrix} def 
-[28.3465 0 0 28.3465 10.5 100.0] umatrix
+/Circle
+{
+    0 0 160 0 360 arc
+    closepath
+    fill
+} def
+
+/Outline
+{
+    gsave
+    0 144 rlineto
+    252 0 rlineto
+    0 -144 rlineto
+    closepath
+    stroke
+    grestore
+} def
+
+/CoverUp
+{
+    gsave
+    1 1 1 setrgbcolor
+    180 0 rlineto
+    0 468 rlineto
+    252 0 rlineto
+    0 -144 rlineto
+    -252 0 rlineto
+    0 -324 rlineto
+    432 0 rlineto
+    0 792 rlineto
+    -612 0 rlineto
+    closepath
+    fill
+    grestore
+} def
+
+/NameBox
+{
+    gsave
+    1 1 1 setrgbcolor
+    0 36 rlineto
+    130 0 rlineto
+    0 -36 rlineto
+    closepath
+    fill
+    grestore
+    gsave
+    0 0 0 setrgbcolor
+    0 36 rlineto
+    130 0 rlineto
+    0 -36 rlineto
+    closepath
+    stroke
+    grestore
+} def
 
 /outsidecircletext
 {
@@ -86,22 +136,53 @@ circtextdict begin
     /pi 3.1415923 def
 end
 
+0 setgray
+3 setlinewidth
+
+gsave
+306 396 translate
+20 {
+    0.749 0.039 0.1882 setrgbcolor
+    Circle
+    0.85 0.85 scale
+    0 0.1568 0.4078 setrgbcolor
+    Circle
+    0.85 0.85 scale
+    1 1 1 setrgbcolor
+    Circle
+    0.85 0.85 scale
+    1 0.8431 0 setrgbcolor
+    Circle
+    0.85 0.85 scale
+} repeat
+grestore
+
+0 0 moveto CoverUp
+180 324 moveto Outline
+241 378 moveto NameBox
+
+/Times-Bold findfont 18 scalefont setfont
+247 390 moveto           % position the current point at
+(Kenneth Berry) show     % stroke the text in parentheses
 
 gsave 
-    /Times-Bold findfont 22 scalefont setfont
 
-    10.5 12 translate
+    306 396 translate
 
-    (Symphony No. 9 (The Choral Symphony))
-    22 90 2 outsidecircletext
+    /Times-Bold findfont 12 scalefont setfont
 
-    /Times-Roman findfont 15 scalefont setfont
+    (kberry14@msudenver.edu)
+    15 180 110 insidecircletext
 
-    (Ludwig von Beethoven)
-    15 90 1 outsidecircletext
+    (github.com/kennethberry)
+    15 0 110 insidecircletext
 
-    (The New York Philharmonic Orchestra)
-    15 270 1 insidecircletext
+    (Denver, CO)
+    9 90 52 outsidecircletext
+
+    (720-625-0585)
+    9 270 60 insidecircletext
+
 grestore
 
 showpage
