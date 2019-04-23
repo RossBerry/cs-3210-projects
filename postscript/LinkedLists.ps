@@ -1,0 +1,225 @@
+%!PS
+%% LinkedLists.ps
+%% Author: Kenneth Berry
+%% Draws diagrams to represent 3 types of linked lists;
+%% singly-linked list
+%% doubly-linked list with tail node
+%% circular doubly-linked list with tail node
+
+/singlelinknode 
+{
+    gsave
+    0 30 rlineto
+    90 0 rlineto
+    0 -30 rlineto
+    closepath
+    stroke
+    grestore
+    60 0 rlineto
+    0 30 rlineto
+    stroke
+} def
+
+/doublelinknode 
+{
+    gsave
+    0 30 rlineto
+    100 0 rlineto
+    0 -30 rlineto
+    closepath
+    stroke
+    grestore
+    gsave
+    80 0 rlineto
+    0 30 rlineto
+    stroke
+    grestore
+    20 0 rlineto
+    0 30 rlineto
+    stroke
+} def
+
+/rightarrow
+{
+    0 rlineto
+    -5 5 rlineto
+    5 -5 rlineto
+    -5 -5 rlineto
+    stroke
+} def
+
+/leftarrow
+{
+    -1 mul 0 rlineto
+    5 5 rlineto
+    -5 -5 rlineto
+    5 -5 rlineto
+    stroke
+} def
+
+/circularrightarrow
+{
+    30 0 rlineto
+    0 -75 rlineto
+    -550 0 rlineto
+    0 75 rlineto
+    27 0 rlineto
+    -5 5 rlineto
+    5 -5 rlineto
+    -5 -5 rlineto
+    stroke
+} def
+
+/circularleftarrow
+{
+    -15 0 rlineto
+    0 -40 rlineto
+    520 0 rlineto
+    0 40 rlineto
+    -12 0 rlineto
+    5 5 rlineto
+    -5 -5 rlineto
+    5 -5 rlineto
+    stroke
+} def
+
+
+0 setgray
+2 setlinewidth
+
+% Draw singly-linked list label
+/Helvetica-Bold findfont 20 scalefont setfont
+60 675 moveto
+(Singly-Linked List) show
+
+% Draw single link nodes for singly-linked list
+gsave
+78 600 translate
+4 {
+    0 0 moveto
+    singlelinknode
+    120 0 translate
+} repeat
+grestore
+
+% Add Head label
+gsave
+/Helvetica-Bold findfont 12 scalefont setfont
+83 635 moveto
+(Head) show
+grestore
+
+% Draw right pointing arrows for singly-linked list
+gsave
+168 615 translate
+3 {
+    0 0 moveto
+    27 rightarrow
+    120 0 translate
+} repeat
+grestore
+
+% Draw doubly-linked list label
+60 475 moveto
+(Doubly-Linked List with Tail Node) show
+
+% Draw doubly linked nodes for doubly-linked list
+gsave
+60 400 translate
+4 {
+    0 0 moveto
+    doublelinknode
+    130 0 translate
+} repeat
+grestore
+
+% Add Head and Tail labels
+gsave
+/Helvetica-Bold findfont 12 scalefont setfont
+85 435 moveto
+(Head) show
+475 435 moveto
+(Tail) show
+grestore
+
+% Draw right pointing arrows for doubly-linked list
+gsave
+160 425 translate
+3 {
+    0 0 moveto
+    27 rightarrow
+    130 0 translate
+} repeat
+grestore
+
+% Draw left pointing arrows for doubly-linked list
+gsave
+189 405 translate
+3 {
+    0 0 moveto
+    27 leftarrow
+    130 0 translate
+} repeat
+grestore
+
+% Draw circular doubly-linked list label
+60 275 moveto
+(Circular Doubly-Linked List) show
+
+gsave
+60 200 translate
+4 {
+    0 0 moveto
+    doublelinknode
+    130 0 translate
+} repeat
+grestore
+
+% Add Head label
+gsave
+/Helvetica-Bold findfont 12 scalefont setfont
+85 235 moveto
+(Head) show
+
+grestore
+
+% Draw right pointing arrows for circular doubly-linked list
+gsave
+160 225 translate
+3 {
+    0 0 moveto
+    27 rightarrow
+    130 0 translate
+} repeat
+grestore
+
+% Draw left pointing arrows for circular doubly-linked list
+gsave
+189 205 translate
+3 {
+    0 0 moveto
+    27 leftarrow
+    130 0 translate
+} repeat
+grestore
+
+% Draw right pointing circular arrows for circular doubly-linked list
+gsave
+550 225 translate
+0 0 moveto
+circularrightarrow
+grestore
+
+% Draw left pointing circular arrows for circular doubly-linked list
+gsave
+60 205 translate
+0 0 moveto
+circularleftarrow
+grestore
+
+% Add my name to top-left of page
+/Helvetica findfont 12 scalefont setfont
+10 775 moveto
+(Kenneth Berry) show
+
+showpage

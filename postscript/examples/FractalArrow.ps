@@ -1,0 +1,21 @@
+% ------------ Variables & Procedures -------------
+/depth 0 def
+/maxdepth 10 def
+/down {/depth depth 1 add def} def
+/up {/depth depth 1 sub def } def
+/DoLine % print a vert. line
+{ 0 144 rlineto currentpoint
+stroke translate 0 0 moveto} def
+/FractArrow
+{ gsave .7 .7 scale %reduce scale
+10 setlinewidth %set line width
+down DoLine %print line
+depth maxdepth le %depth<max. depth?
+{ 135 rotate FractArrow
+−270 rotate FractArrow} if
+up grestore } def
+% ------------ Begin Program ----------------
+300 400 moveto
+FractArrow
+stroke
+showpage

@@ -1,0 +1,150 @@
+%!PS
+%% MyChoice.ps
+%% Author: Kenneth Berry
+%% Draws a series of concentric circles eminating from
+%% the center of the page and each corner; Also draws 
+%% a circular fractal in the center.
+
+% ------------ Variables & Procedures -------------
+
+/color false def % set to /color true def, if you want colors
+/width 595 def
+/height 842 def
+/in {72 mul} bind def
+/size {1.2 in} bind def
+/sqrt2 1.41421356237310 def
+/limit 30 def
+/r 1 def
+/g 0 def
+/b 0 def
+
+/circle
+{
+    gsave
+    newpath
+    0.05 setlinewidth
+    0 0 5 0 360 arc stroke
+    grestore
+} def
+
+/repeatcircle
+{
+    gsave
+    20 {
+        circle
+        1.3 1.3 scale
+    } repeat
+    grestore
+} def
+
+/box % used to create fractal spiral in center of page
+{
+    newpath
+    0 0 moveto
+    dup 0 rlineto
+    dup 0 exch rlineto
+    dup 0.5 mul dup dup -1 mul exch rlineto
+    -1 mul dup rlineto
+    closepath
+    color
+    { 
+        r g b setrgbcolor fill 
+        r g b 
+        /g exch def 
+        /r exch def 
+        /b exch def
+    } { stroke } ifelse
+    dup limit gt
+    {
+        gsave
+        dup dup sqrt2 div exch 0 exch translate
+        45 rotate
+        box
+        grestore 
+        gsave
+        dup sqrt2 div exch 2 div dup 3 mul translate
+        315 rotate box
+        grestore
+    } { pop } ifelse
+} def
+
+0 0 0 setrgbcolor
+
+% Draw center repeating circles
+gsave
+306 392 translate
+repeatcircle
+grestore
+
+% Draw repeating circles in bottom-left corner
+gsave
+repeatcircle
+0 0 150 0 360 arc fill
+grestore
+
+% Draw repeating circles in bottom-right corner
+gsave
+612 0 translate
+repeatcircle
+0 0 150 0 360 arc fill
+grestore
+
+% Draw repeating circles in top-right corner
+gsave
+612 784 translate
+repeatcircle
+0 0 150 0 360 arc fill
+grestore
+
+% Draw repeating circles in top-left corner
+gsave
+0 784 translate
+repeatcircle
+0 0 150 0 360 arc fill
+grestore
+
+% Draw white circle in bottom-left corner
+gsave
+1 1 1 setrgbcolor
+0 0 145 0 360 arc fill
+grestore
+
+% Draw white circle in bottom-right corner
+gsave
+612 0 translate
+1 1 1 setrgbcolor
+0 0 145 0 360 arc fill
+grestore
+
+% Draw white circle in top-right corner
+gsave
+612 784 translate
+1 1 1 setrgbcolor
+0 0 145 0 360 arc fill
+grestore
+
+% Draw white circle in top-left corner
+gsave
+0 784 translate
+1 1 1 setrgbcolor
+0 0 145 0 360 arc fill
+grestore
+
+% Draw fractal spiral in center of page
+gsave
+306 392 translate
+12 {
+size box
+30 rotate
+} repeat
+0 0 50 0 360 arc fill
+1 1 1 setrgbcolor
+0 0 45 0 360 arc fill
+grestore
+
+% Add my name to top-left of page
+/Helvetica findfont 12 scalefont setfont
+10 775 moveto
+(Kenneth Berry) show
+
+showpage

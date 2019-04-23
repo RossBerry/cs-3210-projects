@@ -1,14 +1,13 @@
 %!PS
+%% BusinessCard.ps
+%% Author: Kenneth Berry
+%% Draws a business card in the center of the page.
 
-% resize page so that units are in centimeters
-% bottom-left = (0,0) and top-right = (21, 24)
-matrix currentmatrix /originmat exch def 
-/umatrix {originmat matrix concatmatrix setmatrix} def 
-[28.3465 0 0 28.3465 10.5 100.0] umatrix
+% ------------ Variables & Procedures -------------
 
 /Circle
 {
-    0 0 8 0 360 arc
+    0 0 160 0 360 arc
     closepath
     fill
 } def
@@ -16,48 +15,187 @@ matrix currentmatrix /originmat exch def
 /Outline
 {
     gsave
-    0 5.5 rlineto
-    8.5 0 rlineto
-    0 -5.5 rlineto
+    0 144 rlineto
+    252 0 rlineto
+    0 -144 rlineto
     closepath
     stroke
+    grestore
 } def
 
 /CoverUp
 {
     gsave
     1 1 1 setrgbcolor
-    6.25 0 rlineto
-    0 14.75 rlineto
-    8.5 0 rlineto
-    0 -5.5 rlineto
-    -8.5 0 rlineto
-    0 -9.25 rlineto
-    14.75 0 rlineto
-    0 24 rlineto
-    -21 0 rlineto
+    180 0 rlineto
+    0 468 rlineto
+    252 0 rlineto
+    0 -144 rlineto
+    -252 0 rlineto
+    0 -324 rlineto
+    432 0 rlineto
+    0 792 rlineto
+    -612 0 rlineto
     closepath
     fill
     grestore
 } def
 
+/NameBox
+{
+    gsave
+    1 1 1 setrgbcolor
+    0 36 rlineto
+    120 0 rlineto
+    0 -36 rlineto
+    closepath
+    fill
+    grestore
+    gsave
+    0 0.1568 0.4078 setrgbcolor
+    0 36 rlineto
+    120 0 rlineto
+    0 -36 rlineto
+    closepath
+    stroke
+    grestore
+} def
+
+%%%% Circular Text - this code for creating text that follows
+%%%% a circular path was copied from The Bluebook reference pg. 169
+/outsidecircletext
+{
+    circtextdict begin
+    /radius exch def
+    /centerangle exch def
+    /ptsize exch def
+    /str exch def
+    /xradius radius ptsize 4 div add def
+
+    gsave
+        centerangle str findhalfangle add rotate
+        str
+        {
+            /charcode exch def
+            ( ) dup 0 charcode put outsideplacechar
+        } forall
+    grestore
+    end
+} def
+
+/insidecircletext
+{
+    circtextdict begin
+    /radius exch def
+    /centerangle exch def
+    /ptsize exch def
+    /str exch def
+    /xradius radius ptsize 3 div sub def
+
+    gsave
+        centerangle str findhalfangle sub rotate
+        str
+        {
+            /charcode exch def
+            ( ) dup 0 charcode put insideplacechar
+        } forall
+    grestore
+    end
+} def
+
+/circtextdict 16 dict def
+
+circtextdict begin
+    /findhalfangle
+    {
+        stringwidth pop 2 div
+        2 xradius mul pi mul div 360 mul
+    } def
+
+    /outsideplacechar
+    {
+        /char exch def
+        /halfangle char findhalfangle def
+        gsave
+            halfangle neg rotate
+            radius 0 translate
+            -90 rotate
+            char stringwidth pop 2 div neg 0 moveto
+            char show
+        grestore
+        halfangle 2 mul neg rotate
+    } def
+
+    /insideplacechar
+    {
+        /char exch def
+        /halfangle char findhalfangle def
+        gsave
+            halfangle rotate
+            radius 0 translate
+            90 rotate
+            char stringwidth pop 2 div neg 0 moveto
+            char show
+        grestore
+        halfangle 2 mul rotate
+    } def
+
+    /pi 3.1415923 def
+end
+%%% End of Circular Text code from The Bluebook %%%
 
 0 setgray
-0.1 setlinewidth
+3 setlinewidth
 
+% Create repeating/shrinking circles for card background.
 gsave
-10.5 12 translate
-40 {
+306 396 translate
+20 {
+    0.749 0.039 0.1882 setrgbcolor
+    Circle
+    0.85 0.85 scale
+    0 0.1568 0.4078 setrgbcolor
+    Circle
+    0.85 0.85 scale
     1 1 1 setrgbcolor
     Circle
-    0.80 0.80 scale
-    0 0 0 setrgbcolor
+    0.85 0.85 scale
+    1 0.8431 0 setrgbcolor
     Circle
-    0.95 0.95 scale
+    0.85 0.85 scale
 } repeat
 grestore
 
+% Cover up areas of circles that are not within the Card
 0 0 moveto CoverUp
-6.25 9.25 moveto Outline
+
+% Add Name box and name to center of card
+246 378 moveto NameBox
+0 0.1568 0.4078 setrgbcolor
+/Helvetica-Bold findfont 16 scalefont setfont
+251 391 moveto           % position the current point at
+(Kenneth Berry) show     % stroke the text in parentheses
+
+% Add circular text for email, github, phone, and city
+gsave 
+    306 396 translate
+    /Helvetica-Bold findfont 11 scalefont setfont
+    (kberry14@msudenver.edu)
+    11 180 110 insidecircletext
+    /Helvetica-Bold findfont 11 scalefont setfont
+    (github.com/kennethberry)
+    11 0 110 insidecircletext
+    /Helvetica-Bold findfont 10 scalefont setfont
+    (Denver, CO)
+    10 90 53 outsidecircletext
+    /Helvetica-Bold findfont 10 scalefont setfont
+    (720-625-0585)
+    10 270 60 insidecircletext
+grestore
+
+% Add my name to top-left of page
+/Helvetica findfont 12 scalefont setfont
+10 775 moveto
+(Kenneth Berry) show
 
 showpage

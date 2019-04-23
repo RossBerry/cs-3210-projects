@@ -1,11 +1,14 @@
 %!PS
+% SmileyFaces.ps
+% Author: Kenneth Berry
+% Draws 3 different smiley faces to the page
 
+% ------------ Variables & Procedures -------------
 
-
-% resize page so that units are in centimeters
+% Resizes page so that units are in centimeters
 % bottom-left = (0,0) and top-right = (21, 24)
 matrix currentmatrix /originmat exch def 
-/umatrix {originmat matrix concatmatrix setmatrix} def 
+/umatrix {originmat matrix concatmatrix setmatrix} def
 [28.3465 0 0 28.3465 10.5 100.0] umatrix
 
 /HeadOutline
@@ -48,7 +51,7 @@ matrix currentmatrix /originmat exch def
     stroke
 } def
 
-%-------- Smiley Face 1 -------%
+% ------------ Smiley Face 1 -------------
 0 setgray
 0.3 setlinewidth
 
@@ -56,7 +59,9 @@ matrix currentmatrix /originmat exch def
 gsave
 10.5 18 translate
 1 1 0 setrgbcolor
-0 0 4 0 360 arc closepath fill
+0 0 4 0 360 arc
+closepath
+fill
 grestore
 
 % Outline
@@ -78,17 +83,19 @@ grestore
 % Mouth
 gsave
 10.5 17.5 translate
-0 0 2.5 190 350 arc stroke
+0 0 2.5 190 350 arc
+stroke
 grestore
 
-
-%-------- Smiley Face 2 -------%
+% ------------ Smiley Face 2 -------------
 
 % Background
 gsave
 5.5 9 translate
 1 0.75 0 setrgbcolor
-0 0 4 0 360 arc closepath fill
+0 0 4 0 360 arc
+closepath
+fill
 grestore
 
 % Outline
@@ -98,44 +105,53 @@ gsave
 HeadOutline
 grestore
 
-% Eyes
 % Left eye
 gsave
 4 10.5 translate
-0 0 0.5 0 360 arc fill
+0 0 0.5 0 360 arc
+fill
 
 % Right eye
 3 0 translate
-0 0 0.5 0 360 arc fill
+0 0 0.5 0 360 arc
+fill
 grestore
 
 % Mouth
 gsave
 5.5 8.75 translate
 1 0 0 setrgbcolor
-0 0 2.5 190 350 arc closepath fill
+0 0 2.5 190 350 arc
+closepath
+fill
 0 0 0 setrgbcolor
-0 0 2.5 190 350 arc closepath stroke
+0 0 2.5 190 350 arc
+closepath
+stroke
 grestore
 
 % Teeth
 gsave
 1 1 1 setrgbcolor
-4.5 8.15 moveto TeethBackground
+4.5 8.17 moveto
+TeethBackground
 0.1 setlinewidth
 0 0 0 setrgbcolor
-4.5 8.15 moveto TeethOutline
+4.5 8.15 moveto
+TeethOutline
 grestore
 
+% ------------ Smiley Face 3 -------------
 
-%-------- Smiley Face 3 -------%
 0.2 setlinewidth
 
 % Background
 gsave
 15.5 9 translate
 1 1 0 setrgbcolor
-0 0 4 0 360 arc closepath fill
+0 0 4 0 360 arc
+closepath
+fill
 grestore
 
 % Outline
@@ -144,35 +160,54 @@ gsave
 HeadOutline
 grestore
 
-% Eyes
 % Left Eye
 gsave
 13.5 10 translate
 1 1 1 setrgbcolor
-0 0 1.25 340 200 arc closepath fill
+0 0 1.25 340 200 arc
+closepath
+fill
 0 0 0 setrgbcolor
-0 0 1.25 340 200 arc closepath stroke
+0 0 1.25 340 200 arc
+closepath
+stroke
 0.5 0.5 translate
-0 0 0.5 0 360 arc closepath fill
+0 0 0.5 0 360 arc
+closepath
+fill
 -0.5 -0.5 translate
 
 % Right eye
 3.5 0 translate
 1 1 1 setrgbcolor
-0 0 1.25 340 200 arc closepath fill
+0 0 1.25 340 200 arc
+closepath
+fill
 0 0 0 setrgbcolor
-0 0 1.25 340 200 arc closepath stroke
+0 0 1.25 340 200 arc
+closepath stroke
 0.5 0.5 translate
-0 0 0.5 0 360 arc closepath fill
+0 0 0.5 0 360 arc
+closepath
+fill
 grestore
 
 % Mouth
 gsave
 15.5 9 translate
-1 0 0 setrgbcolor
-0 0 3 190 350 arc closepath fill
+0.5294 0.0902 0.2705 setrgbcolor
+0 0 3 190 350 arc
+closepath
+fill
 0 0 0 setrgbcolor
-0 0 3 190 350 arc closepath stroke
+0 0 3 190 350 arc
+closepath
+stroke
 grestore
+
+% Add my name to top-left of page
+/Helvetica findfont 0.4 scalefont setfont
+0.1 23.8 moveto
+(Kenneth Berry) show
 
 showpage

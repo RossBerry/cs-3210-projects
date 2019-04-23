@@ -1,11 +1,15 @@
 %!PS
+%% SierpinskiHexagon.ps
+%% Author: Kenneth Berry
+%% Draws a hexagon of Sierpinkski Triangles using rotation.
 
-/background
+% ------------ Variables & Procedures -------------
+
+/circlebackground
 {
     gsave
     newpath
     306 392 translate
-    2 setlinewidth
     0 0 0 setrgbcolor
     0 0 282 0 360 arc fill
     grestore
@@ -13,8 +17,7 @@
 
 /sierpinkski
 {
-    dup 1 ge
-    {
+    dup 1 ge {
         1 sub
         gsave
         1 2 div dup scale
@@ -24,8 +27,7 @@
         -0.5 3 sqrt 2 div translate
         dup sierpinkski 
         grestore
-    }
-    {
+    }{
         newpath 0 0 moveto
         1 0 lineto
         0.5 3 sqrt 2 div lineto
@@ -41,15 +43,20 @@
 
     0 setlinewidth
     1 1 1 setrgbcolor
-    6
-    {
+    6 {
         60 rotate
         10 sierpinkski 
     } repeat
     grestore
 } def
 
-background
+
+% Draw background and then draw Sierpinkski hexagon.
+circlebackground
 hexagon
+
+/Helvetica findfont 12 scalefont setfont
+10 775 moveto
+(Kenneth Berry) show
 
 showpage
